@@ -1,3 +1,5 @@
+import datetime
+from datetime import timezone
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import json
@@ -6,6 +8,8 @@ import datetime
 import csv
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
+
 
 # ---------------------------
 # App Constants
@@ -56,10 +60,19 @@ class FitnessTrackerApp:
     def __init__(self, root):
         self.root = root
         self.root.title(APP_NAME)
-        self.root.state('zoomed')
+        
+        # Set window size to 80% of screen
+        screen_width = root.winfo_screenwidth()
+        screen_height = root.winfo_screenheight()
+        window_width = int(screen_width * 0.8)
+        window_height = int(screen_height * 0.8)
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+        self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
+        
         self.root.bind('<F11>', lambda e: self.toggle_fullscreen())
         self.root.bind('<Escape>', lambda e: self.exit_fullscreen())
-        self.is_fullscreen = True
+        self.is_fullscreen = False
         self.data = load_data()
         self.settings = load_settings()
         self.current_user = None
@@ -90,7 +103,17 @@ class FitnessTrackerApp:
         self.root.configure(bg=self.bg_color)
 
     def create_brand_text(self, parent):
+        """Create clear, prominent brand text with icon"""
         frame = tk.Frame(parent, bg=self.panel_color)
+
+        # Large, clear icon with better visibility
+        tk.Label(
+            frame,
+            text="💪",
+            font=("Segoe UI", 60),
+            bg=self.panel_color,
+            fg="#f59e0b"
+        ).pack(pady=(0, 10))
 
         tk.Label(
             frame,
@@ -110,6 +133,9 @@ class FitnessTrackerApp:
         
         return frame
 
+    def create_logo(self, parent):
+        """Alias for create_brand_text for compatibility"""
+        return self.create_brand_text(parent)
 
     def show_login_screen(self):
         for widget in self.root.winfo_children():
@@ -135,18 +161,17 @@ class FitnessTrackerApp:
         login_frame.place(relx=0.5, rely=0.5, anchor="center")
         self.create_brand_text(login_frame).pack(pady=(0, 30))
 
-
         tk.Label(login_frame, text="USERNAME", font=("Segoe UI", 9, "bold"), bg=self.panel_color, fg=self.muted_text).pack(anchor="w", pady=(0, 5))
         uc = tk.Frame(login_frame, bg=self.input_bg)
         uc.pack(fill="x", pady=(0, 15))
-        tk.Label(uc, text="👤", font=("Segoe UI", 14), bg=self.input_bg, fg=self.muted_text).pack(side="left", padx=(10, 5))
+        tk.Label(uc, text="👤", font=("Segoe UI", 18), bg=self.input_bg, fg=self.muted_text).pack(side="left", padx=(10, 5))
         self.username_entry = tk.Entry(uc, font=("Segoe UI", 12), bg=self.input_bg, fg=self.text_color, insertbackground=self.text_color, border=0, relief="flat")
         self.username_entry.pack(side="left", fill="x", expand=True, ipady=10, padx=(0, 10))
 
         tk.Label(login_frame, text="PASSWORD", font=("Segoe UI", 9, "bold"), bg=self.panel_color, fg=self.muted_text).pack(anchor="w", pady=(0, 5))
         pc = tk.Frame(login_frame, bg=self.input_bg)
         pc.pack(fill="x", pady=(0, 10))
-        tk.Label(pc, text="🔒", font=("Segoe UI", 14), bg=self.input_bg, fg=self.muted_text).pack(side="left", padx=(10, 5))
+        tk.Label(pc, text="🔒", font=("Segoe UI", 18), bg=self.input_bg, fg=self.muted_text).pack(side="left", padx=(10, 5))
         self.password_entry = tk.Entry(pc, font=("Segoe UI", 12), bg=self.input_bg, fg=self.text_color, insertbackground=self.text_color, show="●", border=0, relief="flat")
         self.password_entry.pack(side="left", fill="x", expand=True, ipady=10, padx=(0, 10))
 
@@ -174,29 +199,26 @@ class FitnessTrackerApp:
         rf = tk.Frame(mf, bg=self.panel_color, padx=50, pady=40)
         rf.place(relx=0.5, rely=0.5, anchor="center")
 
-        ls = tk.Frame(rf, bg=self.panel_color)
-        ls.pack(pady=(0, 20))
-        self.create_logo(ls).pack()
-        tk.Label(ls, text="Create Account", font=("Segoe UI", 24, "bold"), bg=self.panel_color, fg=self.text_color).pack(pady=(15, 30))
+        self.create_brand_text(rf).pack(pady=(0, 30))
 
         tk.Label(rf, text="USERNAME", font=("Segoe UI", 9, "bold"), bg=self.panel_color, fg=self.muted_text).pack(anchor="w", pady=(0, 5))
         uc = tk.Frame(rf, bg=self.input_bg)
         uc.pack(fill="x", pady=(0, 15))
-        tk.Label(uc, text="👤", font=("Segoe UI", 14), bg=self.input_bg).pack(side="left", padx=(10, 5))
+        tk.Label(uc, text="👤", font=("Segoe UI", 18), bg=self.input_bg).pack(side="left", padx=(10, 5))
         self.reg_username = tk.Entry(uc, font=("Segoe UI", 12), bg=self.input_bg, fg=self.text_color, insertbackground=self.text_color, border=0, relief="flat")
         self.reg_username.pack(side="left", fill="x", expand=True, ipady=10, padx=(0, 10))
 
         tk.Label(rf, text="PASSWORD", font=("Segoe UI", 9, "bold"), bg=self.panel_color, fg=self.muted_text).pack(anchor="w", pady=(0, 5))
         pc = tk.Frame(rf, bg=self.input_bg)
         pc.pack(fill="x", pady=(0, 15))
-        tk.Label(pc, text="🔒", font=("Segoe UI", 14), bg=self.input_bg).pack(side="left", padx=(10, 5))
+        tk.Label(pc, text="🔒", font=("Segoe UI", 18), bg=self.input_bg).pack(side="left", padx=(10, 5))
         self.reg_password = tk.Entry(pc, font=("Segoe UI", 12), bg=self.input_bg, fg=self.text_color, insertbackground=self.text_color, show="●", border=0, relief="flat")
         self.reg_password.pack(side="left", fill="x", expand=True, ipady=10, padx=(0, 10))
 
         tk.Label(rf, text="CONFIRM PASSWORD", font=("Segoe UI", 9, "bold"), bg=self.panel_color, fg=self.muted_text).pack(anchor="w", pady=(0, 5))
         p2c = tk.Frame(rf, bg=self.input_bg)
         p2c.pack(fill="x", pady=(0, 25))
-        tk.Label(p2c, text="🔒", font=("Segoe UI", 14), bg=self.input_bg).pack(side="left", padx=(10, 5))
+        tk.Label(p2c, text="🔒", font=("Segoe UI", 18), bg=self.input_bg).pack(side="left", padx=(10, 5))
         self.reg_password2 = tk.Entry(p2c, font=("Segoe UI", 12), bg=self.input_bg, fg=self.text_color, insertbackground=self.text_color, show="●", border=0, relief="flat")
         self.reg_password2.pack(side="left", fill="x", expand=True, ipady=10, padx=(0, 10))
 
@@ -208,43 +230,10 @@ class FitnessTrackerApp:
         tk.Button(rf, text="← Back to Login", font=("Segoe UI", 9, "bold"), bg=self.panel_color, fg=self.accent_color, activebackground=self.panel_color, activeforeground=self.accent_hover, relief="flat", cursor="hand2", command=self.show_login_screen, borderwidth=0).pack()
 
     def toggle_password(self):
-        self.password_entry.config(show="" if self.show_password_var.get() else "●")
-
-    def login(self):
-        u, p = self.username_entry.get().strip(), self.password_entry.get().strip()
-        if not u or not p:
-            messagebox.showerror("Error", "Please enter username and password")
-            return
-        user = self.data.get(u)
-        if not user or user.get("password") != p:
-            messagebox.showerror("Login Failed", "Invalid credentials")
-            return
-        self.current_user = u
-        self.is_logged_in = True
-        messagebox.showinfo("Success", "Login successful!")
-        self.show_dashboard()
-
-    def register(self):
-        u, p, p2 = self.reg_username.get().strip(), self.reg_password.get().strip(), self.reg_password2.get().strip()
-        if not u or not p or not p2:
-            messagebox.showerror("Error", "All fields are required")
-            return
-        if u in self.data:
-            messagebox.showerror("Error", "Username already exists")
-            return
-        if p != p2:
-            messagebox.showerror("Error", "Passwords do not match")
-            return
-        self.data[u] = {"password": p, "profile": {}, "workouts": [], "settings": {}}
-        save_data(self.data)
-        messagebox.showinfo("Success", "Account created successfully!")
-        self.show_login_screen()
-
-    def toggle_password(self):
         if self.show_password_var.get():
             self.password_entry.config(show="")
         else:
-            self.password_entry.config(show="*")
+            self.password_entry.config(show="●")
 
     def login(self):
         username = self.username_entry.get().strip()
@@ -261,10 +250,15 @@ class FitnessTrackerApp:
 
         self.current_user = username
         self.is_logged_in = True
-        
-        # Success animation
+    
         messagebox.showinfo("Success", "Login successful!")
+    
+    # Set fullscreen on login
+        self.is_fullscreen = True
+        self.root.state('zoomed')  # Maximized for Windows
+    
         self.show_dashboard()
+        self.toggle_sidebar()
 
     def register(self):
         username = self.reg_username.get().strip()
@@ -295,31 +289,25 @@ class FitnessTrackerApp:
         self.show_login_screen()
 
     def show_dashboard(self):
-        # Clear window
         for widget in self.root.winfo_children():
             widget.destroy()
 
-        # Main container
         self.main_container = tk.Frame(self.root, bg=self.bg_color)
         self.main_container.pack(fill="both", expand=True)
 
-        # Sidebar (initially visible)
         self.sidebar_visible = True
         self.create_sidebar(self.main_container)
 
-        # Content area
         content_wrapper = tk.Frame(self.main_container, bg=self.bg_color)
         content_wrapper.pack(side="left", fill="both", expand=True)
 
-        # Top button frame
         top_btn_frame = tk.Frame(content_wrapper, bg=self.bg_color)
         top_btn_frame.pack(anchor="nw", padx=10, pady=10)
 
-        # Menu button (hamburger icon)
         menu_btn = tk.Button(
             top_btn_frame,
             text="☰",
-            font=("Segoe UI", 18),
+            font=("Segoe UI", 22, "bold"),
             bg=self.bg_color,
             fg=self.text_color,
             activebackground=self.input_bg,
@@ -332,11 +320,10 @@ class FitnessTrackerApp:
         )
         menu_btn.pack(side="left", padx=(0, 5))
 
-        # Refresh button
         refresh_btn = tk.Button(
             top_btn_frame,
             text="🔄",
-            font=("Segoe UI", 18),
+            font=("Segoe UI", 20),
             bg=self.bg_color,
             fg=self.text_color,
             activebackground=self.input_bg,
@@ -352,7 +339,6 @@ class FitnessTrackerApp:
         self.content_frame = tk.Frame(content_wrapper, bg=self.bg_color)
         self.content_frame.pack(fill="both", expand=True)
 
-        # Show dashboard by default
         self.show_dashboard_content()
 
     def create_sidebar(self, parent):
@@ -360,16 +346,15 @@ class FitnessTrackerApp:
         self.sidebar.pack(side="left", fill="y")
         self.sidebar.pack_propagate(False)
 
-        # Logo and title with enhanced design
         logo_frame = tk.Frame(self.sidebar, bg=self.sidebar_bg)
         logo_frame.pack(pady=30, padx=20)
 
-        # Large icon
         icon_label = tk.Label(
             logo_frame,
             text="💪",
-            font=("Segoe UI", 48),
-            bg=self.sidebar_bg
+            font=("Segoe UI", 64),
+            bg=self.bg_color,
+            fg="#FFD700"
         )
         icon_label.pack()
 
@@ -380,18 +365,17 @@ class FitnessTrackerApp:
             bg=self.sidebar_bg,
             fg=self.text_color
         )
-        title.pack(pady=(5, 0))
+        title.pack(pady=(10, 0))
         
         version_label = tk.Label(
             logo_frame,
             text="v1.0",
-            font=("Segoe UI", 8),
+            font=("Segoe UI", 9),
             bg=self.sidebar_bg,
             fg=self.muted_text
         )
         version_label.pack()
 
-        # Navigation buttons
         nav_frame = tk.Frame(self.sidebar, bg=self.sidebar_bg)
         nav_frame.pack(fill="x", padx=10)
 
@@ -407,7 +391,7 @@ class FitnessTrackerApp:
             btn = tk.Button(
                 nav_frame,
                 text=text,
-                font=("Segoe UI", 11),
+                font=("Segoe UI", 12),
                 bg=self.sidebar_bg,
                 fg=self.muted_text,
                 activebackground=self.input_bg,
@@ -421,21 +405,18 @@ class FitnessTrackerApp:
             btn.pack(fill="x", pady=2)
             self.nav_buttons.append(btn)
 
-            # Hover effects
             btn.bind("<Enter>", lambda e, b=btn: self.nav_hover(b, True))
             btn.bind("<Leave>", lambda e, b=btn: self.nav_hover(b, False))
 
-        # Spacer
         tk.Frame(self.sidebar, bg=self.sidebar_bg).pack(expand=True)
 
-        # Logout button with icon
         logout_frame = tk.Frame(self.sidebar, bg=self.sidebar_bg)
         logout_frame.pack(fill="x", padx=10, pady=20)
         
         logout_btn = tk.Button(
             logout_frame,
             text="🚪 Logout",
-            font=("Segoe UI", 11),
+            font=("Segoe UI", 12),
             bg=self.sidebar_bg,
             fg="#ef4444",
             activebackground=self.input_bg,
@@ -449,40 +430,18 @@ class FitnessTrackerApp:
         logout_btn.pack(fill="x")
 
     def toggle_sidebar(self):
-        """Toggle sidebar visibility with animation"""
         if self.sidebar_visible:
-            # Slide out animation
-            self.animate_sidebar_out()
-        else:
-            # Slide in animation
-            self.sidebar.pack(side="left", fill="y", before=self.main_container.winfo_children()[1])
-            self.animate_sidebar_in()
-            self.sidebar_visible = True
-
-    def animate_sidebar_out(self, width=250):
-        """Animate sidebar sliding out"""
-        if width > 0:
-            width -= 25
-            self.sidebar.config(width=width)
-            self.root.after(20, lambda: self.animate_sidebar_out(width))
-        else:
+            # Hide sidebar instantly
             self.sidebar.pack_forget()
             self.sidebar_visible = False
-            self.sidebar.config(width=250)  # Reset width
-
-    def animate_sidebar_in(self, width=0):
-        """Animate sidebar sliding in"""
-        if width < 250:
-            width += 25
-            self.sidebar.config(width=width)
-            self.root.after(20, lambda: self.animate_sidebar_in(width))
+        else:
+            # Show sidebar instantly
+            self.sidebar.pack(side="left", fill="y", before=self.main_container.winfo_children()[1])
+            self.sidebar_visible = True
 
     def refresh_content(self):
-        """Refresh the current content"""
-        # Reload data from file
         self.data = load_data()
         
-        # Find which nav button is currently active and refresh that content
         for i, btn in enumerate(self.nav_buttons):
             if btn.cget("bg") == self.accent_color:
                 if i == 0:
@@ -507,23 +466,18 @@ class FitnessTrackerApp:
             widget.destroy()
 
     def animate_fade_in(self, widget, alpha=0.0):
-        """Fade in animation for widgets - visual effect only"""
-        # This is a placeholder for smooth appearance
         pass
 
     def button_hover_effect(self, button, enter):
-        """Enhanced button hover with scale effect"""
         if enter:
             button.config(relief="raised", bd=2)
         else:
             button.config(relief="flat", bd=0)
 
     def nav_hover(self, button, enter):
-        """Navigation button hover animation"""
         if enter:
             if button.cget("bg") != self.accent_color:
                 button.config(bg=self.input_bg)
-                # Add subtle animation
                 self.root.after(10, lambda: button.config(relief="flat"))
         else:
             if button.cget("bg") != self.accent_color:
@@ -534,20 +488,19 @@ class FitnessTrackerApp:
         self.highlight_nav_button(0)
         self.clear_content()
 
-        # Container with padding
         container = tk.Frame(self.content_frame, bg=self.bg_color)
         container.pack(fill="both", expand=True, padx=40, pady=30)
 
-        # Title with icon
         title_frame = tk.Frame(container, bg=self.bg_color)
         title_frame.pack(anchor="w", pady=(0, 20))
         
         tk.Label(
             title_frame,
             text="👋",
-            font=("Segoe UI", 32),
-            bg=self.bg_color
-        ).pack(side="left", padx=(0, 10))
+            font=("Segoe UI", 48),
+            bg=self.bg_color,
+            fg="#FFD700"
+        ).pack(side="left", padx=(0, 15))
         
         title = tk.Label(
             title_frame,
@@ -558,12 +511,12 @@ class FitnessTrackerApp:
         )
         title.pack(side="left")
 
-        # Stats cards with staggered animation
         stats_frame = tk.Frame(container, bg=self.bg_color)
         stats_frame.pack(fill="x", pady=20)
 
         workouts = self.data.get(self.current_user, {}).get("workouts", [])
-        today = datetime.date.today().isoformat()
+        import datetime as dt
+        today = dt.date.today().isoformat()
         today_workouts = [w for w in workouts if w.get("date") == today]
 
         total_mins = sum(w.get("duration_min", 0) for w in today_workouts)
@@ -579,13 +532,13 @@ class FitnessTrackerApp:
             card = tk.Frame(stats_frame, bg=self.panel_color, relief="flat", bd=0)
             card.pack(side="left", padx=(0, 20), ipadx=30, ipady=20)
 
-            # Icon
             tk.Label(
                 card,
                 text=icon,
-                font=("Segoe UI", 24),
-                bg=self.panel_color
-            ).pack()
+                font=("Segoe UI", 38),
+                bg=self.panel_color,
+                fg=color
+            ).pack(pady=(0, 5))
 
             tk.Label(
                 card,
@@ -598,26 +551,25 @@ class FitnessTrackerApp:
             tk.Label(
                 card,
                 text=title_text,
-                font=("Segoe UI", 10),
+                font=("Segoe UI", 11),
                 bg=self.panel_color,
                 fg=self.muted_text
-            ).pack()
+            ).pack(pady=(5, 0))
 
-        # Recent activity
         recent_frame = tk.Frame(container, bg=self.panel_color, relief="flat")
         recent_frame.pack(fill="both", expand=True, pady=20)
 
-        # Recent activity with icon
         recent_header = tk.Frame(recent_frame, bg=self.panel_color)
         recent_header.pack(fill="x", padx=20, pady=(15, 10))
-        
+
         tk.Label(
             recent_header,
             text="📋",
-            font=("Segoe UI", 20),
-            bg=self.panel_color
-        ).pack(side="left", padx=(0, 10))
-        
+            font=("Segoe UI", 28),
+            bg=self.panel_color,
+            fg="#10b981"
+        ).pack(side="left", padx=(0, 12))
+
         tk.Label(
             recent_header,
             text="Today's Activity",
@@ -626,17 +578,44 @@ class FitnessTrackerApp:
             fg=self.text_color
         ).pack(side="left")
 
+        # ADD SCROLLABLE CANVAS HERE
+        canvas_frame = tk.Frame(recent_frame, bg=self.panel_color)
+        canvas_frame.pack(fill="both", expand=True, padx=20, pady=(0, 20))
+
+        # Create canvas and scrollbar
+        canvas = tk.Canvas(canvas_frame, bg=self.panel_color, highlightthickness=0)
+        scrollbar = ttk.Scrollbar(canvas_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg=self.panel_color)
+
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+        # Enable mouse wheel scrolling
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        
+        canvas.bind_all("<MouseWheel>", _on_mousewheel)
+
         if not today_workouts:
-            empty_state = tk.Frame(recent_frame, bg=self.panel_color)
-            empty_state.pack(fill="both", expand=True, padx=20, pady=30)
-            
+            empty_state = tk.Frame(scrollable_frame, bg=self.panel_color)
+            empty_state.pack(fill="both", expand=True, pady=30)
+        
             tk.Label(
                 empty_state,
                 text="💤",
-                font=("Segoe UI", 48),
-                bg=self.panel_color
+                font=("Segoe UI", 64),
+                bg=self.panel_color,
+                fg="#9ca3af"
             ).pack(pady=(20, 10))
-            
+        
             tk.Label(
                 empty_state,
                 text="No workouts today",
@@ -644,7 +623,7 @@ class FitnessTrackerApp:
                 bg=self.panel_color,
                 fg=self.text_color
             ).pack()
-            
+        
             tk.Label(
                 empty_state,
                 text="Add your first workout to get started!",
@@ -654,10 +633,9 @@ class FitnessTrackerApp:
             ).pack(pady=(5, 20))
         else:
             for workout in today_workouts:
-                workout_card = tk.Frame(recent_frame, bg=self.input_bg)
-                workout_card.pack(fill="x", padx=20, pady=5)
+                workout_card = tk.Frame(scrollable_frame, bg=self.input_bg)
+                workout_card.pack(fill="x", pady=5)
 
-                # Workout icon based on type
                 icon_map = {
                     "Running": "🏃",
                     "Cycling": "🚴",
@@ -683,7 +661,7 @@ class FitnessTrackerApp:
                 icon_label = tk.Label(
                     workout_card,
                     text=workout_icon,
-                    font=("Segoe UI", 28),
+                    font=("Segoe UI", 36),
                     bg=self.input_bg
                 )
                 icon_label.pack(side="left", padx=15, pady=10)
@@ -722,7 +700,8 @@ class FitnessTrackerApp:
             title_frame,
             text="👤",
             font=("Segoe UI", 32),
-            bg=self.bg_color
+            bg=self.bg_color,
+            fg="#6366f1"
         ).pack(side="left", padx=(0, 10))
         
         title = tk.Label(
@@ -746,7 +725,8 @@ class FitnessTrackerApp:
             avatar_frame,
             text="👤",
             font=("Segoe UI", 72),
-            bg=self.panel_color
+            bg=self.panel_color,
+            fg="#6366f1"
         ).pack()
 
         form_container = tk.Frame(card, bg=self.panel_color)
@@ -824,7 +804,8 @@ class FitnessTrackerApp:
             title_frame,
             text="💪",
             font=("Segoe UI", 32),
-            bg=self.bg_color
+            bg=self.bg_color,
+            fg="#f59e0b"
         ).pack(side="left", padx=(0, 10))
         
         title = tk.Label(
@@ -878,10 +859,10 @@ class FitnessTrackerApp:
             activeforeground="white",
             relief="flat",
             cursor="hand2",
-            command=lambda: self.open_calendar(self.workout_date),
+            command=lambda: self.open_calendar(self.workout_date),  # ADD THIS LINE
             padx=10,
             pady=5
-        )
+     )
         cal_btn.pack(side="left", padx=(5, 0))
 
         # Type
@@ -1193,7 +1174,8 @@ class FitnessTrackerApp:
             title_frame,
             text="⚙️",
             font=("Segoe UI", 32),
-            bg=self.bg_color
+            bg=self.bg_color,
+            fg="#64748b"
         ).pack(side="left", padx=(0, 10))
         
         title = tk.Label(
@@ -1520,12 +1502,17 @@ class FitnessTrackerApp:
         self.show_login_screen()
 
     def open_calendar(self, entry_widget):
-        """Open a calendar picker window"""
-        cal_window = tk.Toplevel(self.root)
-        cal_window.title("Select Date")
-        cal_window.geometry("350x400")
-        cal_window.configure(bg=self.bg_color)
-        cal_window.resizable(False, False)
+        # Check if calendar window already exists
+        if hasattr(self, 'cal_window') and self.cal_window.winfo_exists():
+            self.cal_window.lift()  # Bring existing window to front
+            return
+    
+        self.cal_window = tk.Toplevel(self.root)
+        self.cal_window.title("Select Date")
+        self.cal_window.geometry("350x400")
+        self.cal_window.configure(bg=self.bg_color)
+        self.cal_window.resizable(False, False)
+        self.cal_window.grab_set()  # Make it modal
 
         # Get current date
         try:
@@ -1537,8 +1524,8 @@ class FitnessTrackerApp:
         self.cal_year = current_date.year
         self.cal_month = current_date.month
 
-        # Header with month/year navigation
-        header_frame = tk.Frame(cal_window, bg=self.panel_color)
+    # Header with month/year navigation
+        header_frame = tk.Frame(self.cal_window, bg=self.panel_color)
         header_frame.pack(fill="x", padx=10, pady=10)
 
         prev_btn = tk.Button(
@@ -1549,7 +1536,7 @@ class FitnessTrackerApp:
             fg="white",
             relief="flat",
             cursor="hand2",
-            command=lambda: self.change_month(-1, cal_window, entry_widget),
+            command=lambda: self.change_month(-1, self.cal_window, entry_widget),
             padx=10
         )
         prev_btn.pack(side="left")
@@ -1560,7 +1547,7 @@ class FitnessTrackerApp:
             font=("Segoe UI", 14, "bold"),
             bg=self.panel_color,
             fg=self.text_color
-        )
+      )
         self.month_year_label.pack(side="left", expand=True)
 
         next_btn = tk.Button(
@@ -1571,19 +1558,19 @@ class FitnessTrackerApp:
             fg="white",
             relief="flat",
             cursor="hand2",
-            command=lambda: self.change_month(1, cal_window, entry_widget),
+            command=lambda: self.change_month(1, self.cal_window, entry_widget),
             padx=10
-        )
+       )
         next_btn.pack(side="right")
 
         # Calendar grid
-        self.cal_frame = tk.Frame(cal_window, bg=self.panel_color)
+        self.cal_frame = tk.Frame(self.cal_window, bg=self.panel_color)
         self.cal_frame.pack(padx=10, pady=5)
 
         self.draw_calendar(entry_widget)
 
         # Bottom buttons
-        btn_frame = tk.Frame(cal_window, bg=self.bg_color)
+        btn_frame = tk.Frame(self.cal_window, bg=self.bg_color)
         btn_frame.pack(pady=10)
 
         today_btn = tk.Button(
@@ -1594,10 +1581,10 @@ class FitnessTrackerApp:
             fg=self.text_color,
             relief="flat",
             cursor="hand2",
-            command=lambda: self.select_today(entry_widget, cal_window),
+            command=lambda: self.select_today(entry_widget, self.cal_window),
             padx=15,
             pady=5
-        )
+       )
         today_btn.pack(side="left", padx=5)
 
         done_btn = tk.Button(
@@ -1608,7 +1595,7 @@ class FitnessTrackerApp:
             fg="white",
             relief="flat",
             cursor="hand2",
-            command=cal_window.destroy,
+            command=self.cal_window.destroy,
             padx=15,
             pady=5
         )
@@ -1622,7 +1609,7 @@ class FitnessTrackerApp:
             fg=self.text_color,
             relief="flat",
             cursor="hand2",
-            command=cal_window.destroy,
+            command=self.cal_window.destroy,
             padx=15,
             pady=5
         )
