@@ -92,13 +92,13 @@ class FitnessTrackerApp:
             self.input_bg = "#2d3250"
             self.sidebar_bg = "#161b33"
         else:
-            self.bg_color = "#f8fafc"
+            self.bg_color = "#f0f0f5"
             self.panel_color = "#ffffff"
             self.text_color = "#1e293b"
             self.muted_text = "#64748b"
             self.accent_color = "#6366f1"
             self.accent_hover = "#4f46e5"
-            self.input_bg = "#f1f5f9"
+            self.input_bg = "#f8f9fa"
             self.sidebar_bg = "#ffffff"
         self.root.configure(bg=self.bg_color)
 
@@ -253,9 +253,8 @@ class FitnessTrackerApp:
     
         messagebox.showinfo("Success", "Login successful!")
     
-    # Set fullscreen on login
         self.is_fullscreen = True
-        self.root.state('zoomed')  # Maximized for Windows
+        self.root.state('zoomed')
     
         self.show_dashboard()
         self.toggle_sidebar()
@@ -301,13 +300,15 @@ class FitnessTrackerApp:
         content_wrapper = tk.Frame(self.main_container, bg=self.bg_color)
         content_wrapper.pack(side="left", fill="both", expand=True)
 
-        top_btn_frame = tk.Frame(content_wrapper, bg=self.bg_color)
-        top_btn_frame.pack(anchor="nw", padx=10, pady=10)
+        # Top bar with menu and refresh
+        top_bar = tk.Frame(content_wrapper, bg=self.bg_color)
+        top_bar.pack(fill="x", padx=20, pady=15)
 
+        # Left side - menu button
         menu_btn = tk.Button(
-            top_btn_frame,
+            top_bar,
             text="☰",
-            font=("Segoe UI", 22, "bold"),
+            font=("Segoe UI", 20, "bold"),
             bg=self.bg_color,
             fg=self.text_color,
             activebackground=self.input_bg,
@@ -315,15 +316,16 @@ class FitnessTrackerApp:
             relief="flat",
             cursor="hand2",
             command=self.toggle_sidebar,
-            padx=15,
+            padx=12,
             pady=5
         )
-        menu_btn.pack(side="left", padx=(0, 5))
+        menu_btn.pack(side="left")
 
+        # Right side - refresh button
         refresh_btn = tk.Button(
-            top_btn_frame,
+            top_bar,
             text="🔄",
-            font=("Segoe UI", 20),
+            font=("Segoe UI", 18),
             bg=self.bg_color,
             fg=self.text_color,
             activebackground=self.input_bg,
@@ -331,10 +333,10 @@ class FitnessTrackerApp:
             relief="flat",
             cursor="hand2",
             command=self.refresh_content,
-            padx=15,
+            padx=12,
             pady=5
         )
-        refresh_btn.pack(side="left")
+        refresh_btn.pack(side="right")
 
         self.content_frame = tk.Frame(content_wrapper, bg=self.bg_color)
         self.content_frame.pack(fill="both", expand=True)
@@ -342,18 +344,18 @@ class FitnessTrackerApp:
         self.show_dashboard_content()
 
     def create_sidebar(self, parent):
-        self.sidebar = tk.Frame(parent, bg=self.sidebar_bg, width=250)
-        self.sidebar.pack(side="left", fill="y")
+        self.sidebar = tk.Frame(parent, bg=self.sidebar_bg, width=280)
+        self.sidebar.pack(side="left", fill="y", padx=(0, 0))
         self.sidebar.pack_propagate(False)
 
         logo_frame = tk.Frame(self.sidebar, bg=self.sidebar_bg)
-        logo_frame.pack(pady=30, padx=20)
+        logo_frame.pack(pady=40, padx=20)
 
         icon_label = tk.Label(
             logo_frame,
             text="💪",
-            font=("Segoe UI", 64),
-            bg=self.bg_color,
+            font=("Segoe UI", 48),
+            bg=self.sidebar_bg,
             fg="#FFD700"
         )
         icon_label.pack()
@@ -366,31 +368,25 @@ class FitnessTrackerApp:
             fg=self.text_color
         )
         title.pack(pady=(10, 0))
-        
-        version_label = tk.Label(
-            logo_frame,
-            text="v1.0",
-            font=("Segoe UI", 9),
-            bg=self.sidebar_bg,
-            fg=self.muted_text
-        )
-        version_label.pack()
 
         nav_frame = tk.Frame(self.sidebar, bg=self.sidebar_bg)
-        nav_frame.pack(fill="x", padx=10)
+        nav_frame.pack(fill="x", padx=20, pady=20)
 
         buttons = [
-            ("🏠 Dashboard", self.show_dashboard_content),
-            ("👤 Profile", self.show_profile_content),
-            ("💪 Workouts", self.show_workouts_content),
-            ("⚙️ Settings", self.show_settings_content)
+            ("🏠", "Dashboard", self.show_dashboard_content),
+            ("👤", "Profile", self.show_profile_content),
+            ("💪", "Workouts", self.show_workouts_content),
+            ("⚙️", "Settings", self.show_settings_content)
         ]
 
         self.nav_buttons = []
-        for text, command in buttons:
+        for icon, text, command in buttons:
+            btn_frame = tk.Frame(nav_frame, bg=self.sidebar_bg)
+            btn_frame.pack(fill="x", pady=8)
+            
             btn = tk.Button(
-                nav_frame,
-                text=text,
+                btn_frame,
+                text=f"{icon}  {text}",
                 font=("Segoe UI", 12),
                 bg=self.sidebar_bg,
                 fg=self.muted_text,
@@ -399,10 +395,11 @@ class FitnessTrackerApp:
                 relief="flat",
                 cursor="hand2",
                 anchor="w",
-                padx=15,
+                padx=20,
+                pady=12,
                 command=command
             )
-            btn.pack(fill="x", pady=2)
+            btn.pack(fill="x")
             self.nav_buttons.append(btn)
 
             btn.bind("<Enter>", lambda e, b=btn: self.nav_hover(b, True))
@@ -411,11 +408,11 @@ class FitnessTrackerApp:
         tk.Frame(self.sidebar, bg=self.sidebar_bg).pack(expand=True)
 
         logout_frame = tk.Frame(self.sidebar, bg=self.sidebar_bg)
-        logout_frame.pack(fill="x", padx=10, pady=20)
+        logout_frame.pack(fill="x", padx=20, pady=30)
         
         logout_btn = tk.Button(
             logout_frame,
-            text="🚪 Logout",
+            text="🚪  Logout",
             font=("Segoe UI", 12),
             bg=self.sidebar_bg,
             fg="#ef4444",
@@ -425,17 +422,16 @@ class FitnessTrackerApp:
             cursor="hand2",
             command=self.logout,
             anchor="w",
-            padx=15
+            padx=20,
+            pady=12
         )
         logout_btn.pack(fill="x")
 
     def toggle_sidebar(self):
         if self.sidebar_visible:
-            # Hide sidebar instantly
             self.sidebar.pack_forget()
             self.sidebar_visible = False
         else:
-            # Show sidebar instantly
             self.sidebar.pack(side="left", fill="y", before=self.main_container.winfo_children()[1])
             self.sidebar_visible = True
 
@@ -465,225 +461,342 @@ class FitnessTrackerApp:
         for widget in self.content_frame.winfo_children():
             widget.destroy()
 
-    def animate_fade_in(self, widget, alpha=0.0):
-        pass
-
-    def button_hover_effect(self, button, enter):
-        if enter:
-            button.config(relief="raised", bd=2)
-        else:
-            button.config(relief="flat", bd=0)
-
     def nav_hover(self, button, enter):
         if enter:
             if button.cget("bg") != self.accent_color:
                 button.config(bg=self.input_bg)
-                self.root.after(10, lambda: button.config(relief="flat"))
         else:
             if button.cget("bg") != self.accent_color:
                 button.config(bg=self.sidebar_bg)
-                self.root.after(10, lambda: button.config(relief="flat"))
+
+    def create_rounded_card(self, parent, **kwargs):
+        """Create a modern rounded card"""
+        card = tk.Frame(parent, bg=self.panel_color, highlightthickness=0, **kwargs)
+        return card
 
     def show_dashboard_content(self):
         self.highlight_nav_button(0)
         self.clear_content()
 
+        # Main container with padding
         container = tk.Frame(self.content_frame, bg=self.bg_color)
-        container.pack(fill="both", expand=True, padx=40, pady=30)
+        container.pack(fill="both", expand=True, padx=30, pady=20)
 
-        title_frame = tk.Frame(container, bg=self.bg_color)
-        title_frame.pack(anchor="w", pady=(0, 20))
+        # Greeting
+        greeting_frame = tk.Frame(container, bg=self.bg_color)
+        greeting_frame.pack(anchor="w", pady=(0, 25))
         
         tk.Label(
-            title_frame,
-            text="👋",
-            font=("Segoe UI", 48),
-            bg=self.bg_color,
-            fg="#FFD700"
-        ).pack(side="left", padx=(0, 15))
-        
-        title = tk.Label(
-            title_frame,
-            text=f"Welcome back, {self.current_user}!",
+            greeting_frame,
+            text=f"Hi, {self.current_user}!",
             font=("Segoe UI", 28, "bold"),
             bg=self.bg_color,
             fg=self.text_color
-        )
-        title.pack(side="left")
+        ).pack(side="left")
 
-        stats_frame = tk.Frame(container, bg=self.bg_color)
-        stats_frame.pack(fill="x", pady=20)
+        tk.Label(
+            greeting_frame,
+            text="Let's take a look at your activity today",
+            font=("Segoe UI", 11),
+            bg=self.bg_color,
+            fg=self.muted_text
+        ).pack(side="left", padx=(15, 0))
+
+        # Stats row
+        stats_row = tk.Frame(container, bg=self.bg_color)
+        stats_row.pack(fill="both", expand=True, pady=(0, 0))
 
         workouts = self.data.get(self.current_user, {}).get("workouts", [])
-        import datetime as dt
-        today = dt.date.today().isoformat()
+        today = datetime.date.today().isoformat()
         today_workouts = [w for w in workouts if w.get("date") == today]
 
         total_mins = sum(w.get("duration_min", 0) for w in today_workouts)
         total_cal = sum(w.get("calories", 0) for w in today_workouts)
 
-        stats = [
-            ("Total Workouts", str(len(today_workouts)), "#3b82f6", "🏃"),
-            ("Total Minutes", str(total_mins), "#10b981", "⏱️"),
-            ("Calories Burned", str(total_cal), "#f59e0b", "🔥")
+        # Left side - Main workout card
+        workout_card = self.create_rounded_card(stats_row)
+        workout_card.pack(side="left", fill="both", expand=True, padx=(0, 15))
+
+        workout_header = tk.Frame(workout_card, bg=self.panel_color)
+        workout_header.pack(fill="x", padx=25, pady=(20, 15))
+
+        tk.Label(
+            workout_header,
+            text="Your Workout\nResults for Today",
+            font=("Segoe UI", 16, "bold"),
+            bg=self.panel_color,
+            fg=self.text_color,
+            justify="left"
+        ).pack(side="left", anchor="w")
+
+        # Circular stats visualization
+        viz_frame = tk.Frame(workout_card, bg=self.panel_color, height=250)
+        viz_frame.pack(fill="both", expand=True, padx=25, pady=(0, 20))
+        viz_frame.pack_propagate(False)
+
+        # Create canvas for circles
+        canvas = tk.Canvas(viz_frame, bg=self.panel_color, highlightthickness=0)
+        canvas.pack(fill="both", expand=True)
+
+        # Draw gradient circles (simplified) - centered
+        def draw_circles(event=None):
+            canvas.delete("all")
+            w = canvas.winfo_width()
+            h = canvas.winfo_height()
+            cx, cy = w // 2, h // 2
+            
+            # Yellow circle (calories intake)
+            canvas.create_oval(cx + 80, cy - 50, cx + 280, cy + 150, fill="#FFF9C4", outline="")
+            # Pink circle (calories burned)
+            canvas.create_oval(cx - 20, cy - 20, cx + 180, cy + 180, fill="#FFCDD2", outline="")
+            # Dark circle (activity time)
+            canvas.create_oval(cx - 70, cy - 40, cx + 70, cy + 100, fill="#4A5568", outline="")
+            
+            # Add stats text
+            canvas.create_text(cx, cy + 30, text=f"{total_mins/60:.1f}\nhours", 
+                              font=("Segoe UI", 12, "bold"), fill="white", justify="center")
+            canvas.create_text(cx + 80, cy + 70, text=f"{total_cal}\nkcal", 
+                              font=("Segoe UI", 12, "bold"), fill="#FF6B6B", justify="center")
+            canvas.create_text(cx + 180, cy + 50, text=f"{total_cal+500}\nkcal", 
+                              font=("Segoe UI", 12, "bold"), fill="#FFA500", justify="center")
+
+        canvas.bind("<Configure>", draw_circles)
+        draw_circles()
+
+        # Legend
+        legend_frame = tk.Frame(workout_card, bg=self.panel_color)
+        legend_frame.pack(anchor="w", padx=25, pady=(0, 20))
+
+        legend_items = [
+            ("Calories intake", "#FFF9C4"),
+            ("Calories burned", "#FFCDD2"),
+            ("Activity time", "#4A5568")
         ]
 
-        for title_text, value, color, icon in stats:
-            card = tk.Frame(stats_frame, bg=self.panel_color, relief="flat", bd=0)
-            card.pack(side="left", padx=(0, 20), ipadx=30, ipady=20)
+        for text, color in legend_items:
+            item_frame = tk.Frame(legend_frame, bg=self.panel_color)
+            item_frame.pack(side="left", padx=(0, 20))
+            
+            tk.Label(item_frame, text="●", font=("Segoe UI", 16), bg=self.panel_color, fg=color).pack(side="left", padx=(0, 5))
+            tk.Label(item_frame, text=text, font=("Segoe UI", 9), bg=self.panel_color, fg=self.muted_text).pack(side="left")
 
-            tk.Label(
-                card,
-                text=icon,
-                font=("Segoe UI", 38),
-                bg=self.panel_color,
-                fg=color
-            ).pack(pady=(0, 5))
+        # Right side - Calendar and list
+        right_col = tk.Frame(stats_row, bg=self.bg_color, width=350)
+        right_col.pack(side="left", fill="both")
+        right_col.pack_propagate(False)
 
-            tk.Label(
-                card,
-                text=value,
-                font=("Segoe UI", 32, "bold"),
-                bg=self.panel_color,
-                fg=color
-            ).pack()
+        # Mini calendar card
+        cal_card = self.create_rounded_card(right_col)
+        cal_card.pack(fill="x", pady=(0, 15))
 
-            tk.Label(
-                card,
-                text=title_text,
-                font=("Segoe UI", 11),
-                bg=self.panel_color,
-                fg=self.muted_text
-            ).pack(pady=(5, 0))
-
-        recent_frame = tk.Frame(container, bg=self.panel_color, relief="flat")
-        recent_frame.pack(fill="both", expand=True, pady=20)
-
-        recent_header = tk.Frame(recent_frame, bg=self.panel_color)
-        recent_header.pack(fill="x", padx=20, pady=(15, 10))
+        cal_header = tk.Frame(cal_card, bg=self.panel_color)
+        cal_header.pack(fill="x", padx=20, pady=(15, 10))
 
         tk.Label(
-            recent_header,
-            text="📋",
-            font=("Segoe UI", 28),
-            bg=self.panel_color,
-            fg="#10b981"
-        ).pack(side="left", padx=(0, 12))
-
-        tk.Label(
-            recent_header,
-            text="Today's Activity",
-            font=("Segoe UI", 18, "bold"),
+            cal_header,
+            text="Your Training Days",
+            font=("Segoe UI", 13, "bold"),
             bg=self.panel_color,
             fg=self.text_color
         ).pack(side="left")
 
-        # ADD SCROLLABLE CANVAS HERE
-        canvas_frame = tk.Frame(recent_frame, bg=self.panel_color)
-        canvas_frame.pack(fill="both", expand=True, padx=20, pady=(0, 20))
+        # Month selector
+        month_frame = tk.Frame(cal_header, bg=self.panel_color)
+        month_frame.pack(side="right")
 
-        # Create canvas and scrollbar
-        canvas = tk.Canvas(canvas_frame, bg=self.panel_color, highlightthickness=0)
-        scrollbar = ttk.Scrollbar(canvas_frame, orient="vertical", command=canvas.yview)
-        scrollable_frame = tk.Frame(canvas, bg=self.panel_color)
-
-        scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        self.cal_display_month = datetime.date.today().month
+        self.cal_display_year = datetime.date.today().year
+        
+        self.month_label = tk.Label(
+            month_frame,
+            text=datetime.date(self.cal_display_year, self.cal_display_month, 1).strftime("%B ▼"),
+            font=("Segoe UI", 10),
+            bg=self.panel_color,
+            fg=self.muted_text,
+            cursor="hand2"
         )
+        self.month_label.pack()
 
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
+        # Mini calendar grid
+        self.cal_grid_frame = tk.Frame(cal_card, bg=self.panel_color)
+        self.cal_grid_frame.pack(padx=20, pady=(0, 15))
 
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
+        # Draw initial calendar
+        self.draw_mini_calendar()
 
-        # Enable mouse wheel scrolling
-        def _on_mousewheel(event):
-            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-        
-        canvas.bind_all("<MouseWheel>", _on_mousewheel)
+        # Activity list card
+        activity_card = self.create_rounded_card(right_col)
+        activity_card.pack(fill="both", expand=True)
 
-        if not today_workouts:
-            empty_state = tk.Frame(scrollable_frame, bg=self.panel_color)
-            empty_state.pack(fill="both", expand=True, pady=30)
-        
-            tk.Label(
-                empty_state,
-                text="💤",
-                font=("Segoe UI", 64),
-                bg=self.panel_color,
-                fg="#9ca3af"
-            ).pack(pady=(20, 10))
-        
-            tk.Label(
-                empty_state,
-                text="No workouts today",
-                font=("Segoe UI", 14, "bold"),
-                bg=self.panel_color,
-                fg=self.text_color
-            ).pack()
-        
-            tk.Label(
-                empty_state,
-                text="Add your first workout to get started!",
-                font=("Segoe UI", 11),
-                bg=self.panel_color,
-                fg=self.muted_text
-            ).pack(pady=(5, 20))
-        else:
-            for workout in today_workouts:
-                workout_card = tk.Frame(scrollable_frame, bg=self.input_bg)
-                workout_card.pack(fill="x", pady=5)
+        activity_header = tk.Frame(activity_card, bg=self.panel_color)
+        activity_header.pack(fill="x", padx=20, pady=(15, 10))
+
+        tk.Label(
+            activity_header,
+            text="My Habits",
+            font=("Segoe UI", 13, "bold"),
+            bg=self.panel_color,
+            fg=self.text_color
+        ).pack(side="left")
+
+        tk.Button(
+            activity_header,
+            text="+ Add New",
+            font=("Segoe UI", 9),
+            bg=self.accent_color,
+            fg="white",
+            relief="flat",
+            cursor="hand2",
+            command=self.show_workouts_content,
+            padx=10,
+            pady=3
+        ).pack(side="right")
+
+        # Workout items
+        if today_workouts:
+            for workout in today_workouts[:3]:
+                item_frame = tk.Frame(activity_card, bg=self.input_bg)
+                item_frame.pack(fill="x", padx=20, pady=5)
 
                 icon_map = {
-                    "Running": "🏃",
-                    "Cycling": "🚴",
-                    "Swimming": "🏊",
-                    "Weight Training": "🏋️",
-                    "Yoga": "🧘",
-                    "Pilates": "🤸",
-                    "CrossFit": "💪",
-                    "Boxing": "🥊",
-                    "Dancing": "💃",
-                    "Walking": "🚶",
-                    "Hiking": "🥾",
-                    "Rowing": "🚣",
-                    "Jump Rope": "🪢",
-                    "Elliptical": "🎯",
-                    "Aerobics": "🤾",
-                    "Sports (Basketball, Soccer, etc.)": "⚽",
-                    "Stretching": "🤸",
-                    "HIIT": "⚡",
+                    "Running": "🏃", "Cycling": "🚴", "Swimming": "🏊",
+                    "Weight Training": "🏋️", "Yoga": "🧘", "Pilates": "🤸"
                 }
-                workout_icon = icon_map.get(workout.get("type", ""), "🏃")
-
-                icon_label = tk.Label(
-                    workout_card,
-                    text=workout_icon,
-                    font=("Segoe UI", 36),
-                    bg=self.input_bg
-                )
-                icon_label.pack(side="left", padx=15, pady=10)
-
-                info_frame = tk.Frame(workout_card, bg=self.input_bg)
-                info_frame.pack(side="left", padx=5, pady=10)
+                icon = icon_map.get(workout.get("type"), "💪")
 
                 tk.Label(
-                    info_frame,
+                    item_frame,
+                    text=icon,
+                    font=("Segoe UI", 20),
+                    bg=self.input_bg
+                ).pack(side="left", padx=10, pady=8)
+
+                info = tk.Frame(item_frame, bg=self.input_bg)
+                info.pack(side="left", fill="x", expand=True, pady=8)
+
+                tk.Label(
+                    info,
                     text=workout.get("type", "Workout"),
-                    font=("Segoe UI", 14, "bold"),
+                    font=("Segoe UI", 11, "bold"),
                     bg=self.input_bg,
                     fg=self.text_color
                 ).pack(anchor="w")
 
                 tk.Label(
-                    info_frame,
-                    text=f"⏱️ {workout.get('duration_min', 0)} min • 🔥 {workout.get('calories', 0)} kcal",
-                    font=("Segoe UI", 10),
+                    info,
+                    text=f"Trainer: {self.current_user}",
+                    font=("Segoe UI", 9),
                     bg=self.input_bg,
                     fg=self.muted_text
                 ).pack(anchor="w")
+
+                # Progress bar
+                progress_frame = tk.Frame(item_frame, bg=self.input_bg)
+                progress_frame.pack(side="right", padx=10)
+
+                tk.Label(
+                    progress_frame,
+                    text=f"Duration: {workout.get('duration_min', 0)} min",
+                    font=("Segoe UI", 8),
+                    bg=self.input_bg,
+                    fg=self.muted_text
+                ).pack()
+        else:
+            tk.Label(
+                activity_card,
+                text="No workouts today\nAdd your first workout!",
+                font=("Segoe UI", 11),
+                bg=self.panel_color,
+                fg=self.muted_text,
+                justify="center"
+            ).pack(pady=30)
+
+        # Bottom row - Quick stats
+        bottom_row = tk.Frame(container, bg=self.bg_color)
+        bottom_row.pack(fill="x", pady=(10, 0))
+
+        # Steps card
+        steps_card = self.create_rounded_card(bottom_row)
+        steps_card.pack(side="left", fill="both", expand=True, padx=(0, 15))
+
+        steps_content = tk.Frame(steps_card, bg=self.panel_color)
+        steps_content.pack(fill="both", expand=True, padx=25, pady=20)
+
+        tk.Label(
+            steps_content,
+            text="Steps for Today",
+            font=("Segoe UI", 13, "bold"),
+            bg=self.panel_color,
+            fg=self.text_color
+        ).pack(anchor="w")
+
+        tk.Label(
+            steps_content,
+            text="Keep your body toned",
+            font=("Segoe UI", 9),
+            bg=self.panel_color,
+            fg=self.muted_text
+        ).pack(anchor="w", pady=(2, 15))
+
+        # Circular progress
+        progress_canvas = tk.Canvas(steps_content, bg=self.panel_color, highlightthickness=0, width=100, height=100)
+        progress_canvas.pack()
+
+        progress_canvas.create_oval(10, 10, 90, 90, outline="#FFB74D", width=8)
+        progress_canvas.create_text(50, 40, text="Goal", font=("Segoe UI", 8), fill=self.muted_text)
+        progress_canvas.create_text(50, 60, text=str(len(today_workouts)*1000), font=("Segoe UI", 14, "bold"), fill=self.text_color)
+
+        # Weight loss card
+        weight_card = self.create_rounded_card(bottom_row)
+        weight_card.pack(side="left", fill="both", expand=True)
+
+        weight_content = tk.Frame(weight_card, bg=self.panel_color)
+        weight_content.pack(fill="both", expand=True, padx=25, pady=20)
+
+        tk.Label(
+            weight_content,
+            text="Weight Loss Plan",
+            font=("Segoe UI", 13, "bold"),
+            bg=self.panel_color,
+            fg=self.text_color
+        ).pack(anchor="w")
+
+        profile = self.data.get(self.current_user, {}).get("profile", {})
+        weight = profile.get("weight_(kg)", "58")
+        
+        tk.Label(
+            weight_content,
+            text=f"68% Completed",
+            font=("Segoe UI", 11),
+            bg=self.panel_color,
+            fg=self.accent_color
+        ).pack(anchor="e", pady=(0, 15))
+
+        # Weight slider
+        slider_frame = tk.Frame(weight_content, bg=self.panel_color)
+        slider_frame.pack(fill="x", pady=10)
+
+        tk.Label(
+            slider_frame,
+            text=f"{weight} kg",
+            font=("Segoe UI", 10),
+            bg=self.panel_color,
+            fg=self.text_color
+        ).pack(side="left")
+
+        tk.Label(
+            slider_frame,
+            text="50 kg",
+            font=("Segoe UI", 10),
+            bg=self.panel_color,
+            fg=self.text_color
+        ).pack(side="right")
+
+        # Progress bar
+        progress_bar = tk.Canvas(weight_content, bg=self.panel_color, highlightthickness=0, height=15)
+        progress_bar.pack(fill="x", pady=5)
+        progress_bar.create_rectangle(0, 0, 200, 15, fill=self.input_bg, outline="")
+        progress_bar.create_rectangle(0, 0, 136, 15, fill=self.accent_color, outline="")
 
     def show_profile_content(self):
         self.highlight_nav_button(1)
