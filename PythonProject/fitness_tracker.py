@@ -300,13 +300,11 @@ class FitnessTrackerApp:
         content_wrapper = tk.Frame(self.main_container, bg=self.bg_color)
         content_wrapper.pack(side="left", fill="both", expand=True)
 
-        # Top bar with menu and refresh
-        top_bar = tk.Frame(content_wrapper, bg=self.bg_color)
-        top_bar.pack(fill="x", padx=20, pady=15)
+        top_btn_frame = tk.Frame(content_wrapper, bg=self.bg_color)
+        top_btn_frame.pack(anchor="nw", padx=20, pady=15)
 
-        # Left side - menu button
         menu_btn = tk.Button(
-            top_bar,
+            top_btn_frame,
             text="☰",
             font=("Segoe UI", 20, "bold"),
             bg=self.bg_color,
@@ -319,11 +317,10 @@ class FitnessTrackerApp:
             padx=12,
             pady=5
         )
-        menu_btn.pack(side="left")
+        menu_btn.pack(side="left", padx=(0, 5))
 
-        # Right side - refresh button
         refresh_btn = tk.Button(
-            top_bar,
+            top_btn_frame,
             text="🔄",
             font=("Segoe UI", 18),
             bg=self.bg_color,
@@ -336,7 +333,7 @@ class FitnessTrackerApp:
             padx=12,
             pady=5
         )
-        refresh_btn.pack(side="right")
+        refresh_btn.pack(side="left")
 
         self.content_frame = tk.Frame(content_wrapper, bg=self.bg_color)
         self.content_frame.pack(fill="both", expand=True)
@@ -362,8 +359,8 @@ class FitnessTrackerApp:
 
         title = tk.Label(
             logo_frame,
-            text="Markyle Fitness",
-            font=("Segoe UI", 16, "bold"),
+            text="Be/run",
+            font=("Segoe UI", 20, "bold"),
             bg=self.sidebar_bg,
             fg=self.text_color
         )
@@ -504,7 +501,7 @@ class FitnessTrackerApp:
 
         # Stats row
         stats_row = tk.Frame(container, bg=self.bg_color)
-        stats_row.pack(fill="both", expand=True, pady=(0, 0))
+        stats_row.pack(fill="x", pady=(0, 20))
 
         workouts = self.data.get(self.current_user, {}).get("workouts", [])
         today = datetime.date.today().isoformat()
@@ -530,38 +527,25 @@ class FitnessTrackerApp:
         ).pack(side="left", anchor="w")
 
         # Circular stats visualization
-        viz_frame = tk.Frame(workout_card, bg=self.panel_color, height=250)
+        viz_frame = tk.Frame(workout_card, bg=self.panel_color)
         viz_frame.pack(fill="both", expand=True, padx=25, pady=(0, 20))
-        viz_frame.pack_propagate(False)
 
         # Create canvas for circles
-        canvas = tk.Canvas(viz_frame, bg=self.panel_color, highlightthickness=0)
+        canvas = tk.Canvas(viz_frame, bg=self.panel_color, highlightthickness=0, height=200)
         canvas.pack(fill="both", expand=True)
 
-        # Draw gradient circles (simplified) - centered
-        def draw_circles(event=None):
-            canvas.delete("all")
-            w = canvas.winfo_width()
-            h = canvas.winfo_height()
-            cx, cy = w // 2, h // 2
-            
-            # Yellow circle (calories intake)
-            canvas.create_oval(cx + 80, cy - 50, cx + 280, cy + 150, fill="#FFF9C4", outline="")
-            # Pink circle (calories burned)
-            canvas.create_oval(cx - 20, cy - 20, cx + 180, cy + 180, fill="#FFCDD2", outline="")
-            # Dark circle (activity time)
-            canvas.create_oval(cx - 70, cy - 40, cx + 70, cy + 100, fill="#4A5568", outline="")
-            
-            # Add stats text
-            canvas.create_text(cx, cy + 30, text=f"{total_mins/60:.1f}\nhours", 
-                              font=("Segoe UI", 12, "bold"), fill="white", justify="center")
-            canvas.create_text(cx + 80, cy + 70, text=f"{total_cal}\nkcal", 
-                              font=("Segoe UI", 12, "bold"), fill="#FF6B6B", justify="center")
-            canvas.create_text(cx + 180, cy + 50, text=f"{total_cal+500}\nkcal", 
-                              font=("Segoe UI", 12, "bold"), fill="#FFA500", justify="center")
+        # Draw gradient circles (simplified)
+        canvas.create_oval(250, 50, 450, 250, fill="#FFF9C4", outline="")
+        canvas.create_oval(150, 100, 300, 250, fill="#FFCDD2", outline="")
+        canvas.create_oval(100, 80, 220, 200, fill="#4A5568", outline="")
 
-        canvas.bind("<Configure>", draw_circles)
-        draw_circles()
+        # Add stats text
+        canvas.create_text(160, 140, text=f"{total_mins/60:.1f}\nhours", 
+                          font=("Segoe UI", 12, "bold"), fill="white", justify="center")
+        canvas.create_text(230, 170, text=f"{total_cal}\nkcal", 
+                          font=("Segoe UI", 12, "bold"), fill="white", justify="center")
+        canvas.create_text(360, 150, text=f"{total_cal}\nkcal", 
+                          font=("Segoe UI", 12, "bold"), fill="#FF6B6B", justify="center")
 
         # Legend
         legend_frame = tk.Frame(workout_card, bg=self.panel_color)
@@ -581,9 +565,8 @@ class FitnessTrackerApp:
             tk.Label(item_frame, text=text, font=("Segoe UI", 9), bg=self.panel_color, fg=self.muted_text).pack(side="left")
 
         # Right side - Calendar and list
-        right_col = tk.Frame(stats_row, bg=self.bg_color, width=350)
+        right_col = tk.Frame(stats_row, bg=self.bg_color)
         right_col.pack(side="left", fill="both")
-        right_col.pack_propagate(False)
 
         # Mini calendar card
         cal_card = self.create_rounded_card(right_col)
@@ -600,29 +583,54 @@ class FitnessTrackerApp:
             fg=self.text_color
         ).pack(side="left")
 
-        # Month selector
-        month_frame = tk.Frame(cal_header, bg=self.panel_color)
-        month_frame.pack(side="right")
-
-        self.cal_display_month = datetime.date.today().month
-        self.cal_display_year = datetime.date.today().year
-        
-        self.month_label = tk.Label(
-            month_frame,
-            text=datetime.date(self.cal_display_year, self.cal_display_month, 1).strftime("%B ▼"),
+        tk.Label(
+            cal_header,
+            text=datetime.date.today().strftime("%B ▼"),
             font=("Segoe UI", 10),
             bg=self.panel_color,
-            fg=self.muted_text,
-            cursor="hand2"
-        )
-        self.month_label.pack()
+            fg=self.muted_text
+        ).pack(side="right")
 
         # Mini calendar grid
-        self.cal_grid_frame = tk.Frame(cal_card, bg=self.panel_color)
-        self.cal_grid_frame.pack(padx=20, pady=(0, 15))
+        cal_grid = tk.Frame(cal_card, bg=self.panel_color)
+        cal_grid.pack(padx=20, pady=(0, 15))
 
-        # Draw initial calendar
-        self.draw_mini_calendar()
+        days = ["M", "T", "W", "T", "F", "S", "S"]
+        for i, day in enumerate(days):
+            tk.Label(
+                cal_grid,
+                text=day,
+                font=("Segoe UI", 9),
+                bg=self.panel_color,
+                fg=self.muted_text,
+                width=3
+            ).grid(row=0, column=i, padx=2, pady=2)
+
+        # Sample dates
+        import calendar
+        today = datetime.date.today()
+        cal = calendar.monthcalendar(today.year, today.month)
+        
+        for week_num, week in enumerate(cal[:4], start=1):
+            for day_num, day in enumerate(week):
+                if day == 0:
+                    continue
+                date_obj = datetime.date(today.year, today.month, day)
+                is_today = (date_obj == today)
+                has_workout = any(w.get("date") == date_obj.isoformat() for w in workouts)
+                
+                bg = "#FFD700" if is_today else ("#6366f1" if has_workout else self.input_bg)
+                fg = "white" if (is_today or has_workout) else self.muted_text
+                
+                tk.Label(
+                    cal_grid,
+                    text=str(day),
+                    font=("Segoe UI", 9, "bold" if is_today else "normal"),
+                    bg=bg,
+                    fg=fg,
+                    width=3,
+                    height=1
+                ).grid(row=week_num, column=day_num, padx=2, pady=2)
 
         # Activity list card
         activity_card = self.create_rounded_card(right_col)
