@@ -3822,4 +3822,8 @@ if __name__ == "__main__":
 
     root = tk.Tk()
     app = FitnessTrackerApp(root)
+<<<<<<< HEAD
     root.mainloop()
+=======
+    root.mainloop()
+>>>>>>> 33393338362784cfa1038be07aba94c793ddeeaf
