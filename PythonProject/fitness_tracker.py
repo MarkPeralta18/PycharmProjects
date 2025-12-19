@@ -6,6 +6,9 @@ import csv
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from datetime import datetime, date, timedelta, timezone
+from PyQt6.QtWidgets import QMessageBox
+from tkinter import messagebox
+
 
 # ---------------------------
 # App Constants
@@ -105,7 +108,7 @@ class FitnessTrackerApp:
         # Large, clear icon with better visibility
         tk.Label(
             frame,
-            text="💪",
+            text="🏋️",
             font=("Segoe UI", 60),
             bg=self.panel_color,
             fg="#f59e0b"
@@ -140,144 +143,626 @@ class FitnessTrackerApp:
         main_frame = tk.Frame(self.root, bg=self.bg_color)
         main_frame.pack(fill="both", expand=True)
         
-        try:
-            from PIL import Image, ImageTk, ImageFilter, ImageEnhance
-            bg_image = Image.open("gym_background.jpg")
-            w, h = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
-            bg_image = bg_image.resize((w, h), Image.LANCZOS).filter(ImageFilter.GaussianBlur(3))
-            bg_image = ImageEnhance.Brightness(bg_image).enhance(0.3)
-            bg_photo = ImageTk.PhotoImage(bg_image)
-            bg_label = tk.Label(main_frame, image=bg_photo)
-            bg_label.image = bg_photo
-            bg_label.place(x=0, y=0, relwidth=1, relheight=1)
-        except:
-            pass
+        # Create split-screen container
+        container = tk.Frame(main_frame, bg=self.bg_color)
+        container.pack(fill="both", expand=True)
+        
+        # LEFT SIDE - Visual/Brand Section
+        left_frame = tk.Frame(container, bg=self.accent_color)
+        left_frame.pack(side="left", fill="both", expand=True)
+        
+        # Center content in left frame
+        left_content = tk.Frame(left_frame, bg=self.accent_color)
+        left_content.place(relx=0.5, rely=0.5, anchor="center")
+        
+        # Large animated brand section
+        tk.Label(
+            left_content,
+            text="❚█══█❚",
+            font=("Segoe UI", 120),
+            bg=self.accent_color,
+            fg="white"
+        ).pack(pady=(0, 20))
+        
+        
+        tk.Label(
+            left_content,
+            text="MARKYLE",
+            font=("Segoe UI", 48, "bold"),
+            bg=self.accent_color,
+            fg="white"
+        ).pack()
+        
+        tk.Label(
+            left_content,
+            text="Fitness Tracker",
+            font=("Segoe UI", 18),
+            bg=self.accent_color,
+            fg="white"
+        ).pack(pady=(5, 30))
+        
+        tk.Label(
+            left_content,
+            text="Track your fitness journey\nAchieve your goals\nStay motivated",
+            font=("Segoe UI", 14),
+            bg=self.accent_color,
+            fg="white",
+            justify="center"
+        ).pack()
 
-        login_frame = tk.Frame(main_frame, bg=self.panel_color, padx=50, pady=40)
+        # RIGHT SIDE - Login Form Section
+        right_frame = tk.Frame(container, bg=self.panel_color)
+        right_frame.pack(side="right", fill="both", expand=True)
+        
+        # Login form centered in right frame
+        login_frame = tk.Frame(right_frame, bg=self.panel_color, padx=60, pady=40)
         login_frame.place(relx=0.5, rely=0.5, anchor="center")
-        self.create_brand_text(login_frame).pack(pady=(0, 30))
+        
+        # Welcome text
+        tk.Label(
+            login_frame,
+            text="Welcome Back!",
+            font=("Segoe UI", 32, "bold"),
+            bg=self.panel_color,
+            fg=self.text_color
+        ).pack(pady=(0, 10))
+        
+        tk.Label(
+            login_frame,
+            text="Please login to your account",
+            font=("Segoe UI", 11),
+            bg=self.panel_color,
+            fg=self.muted_text
+        ).pack(pady=(0, 40))
 
-        tk.Label(login_frame, text="USERNAME", font=("Segoe UI", 9, "bold"), bg=self.panel_color, fg=self.muted_text).pack(anchor="w", pady=(0, 5))
-        uc = tk.Frame(login_frame, bg=self.input_bg)
-        uc.pack(fill="x", pady=(0, 15))
-        tk.Label(uc, text="👤", font=("Segoe UI", 18), bg=self.input_bg, fg=self.muted_text).pack(side="left", padx=(10, 5))
-        self.username_entry = tk.Entry(uc, font=("Segoe UI", 12), bg=self.input_bg, fg=self.text_color, insertbackground=self.text_color, border=0, relief="flat")
-        self.username_entry.pack(side="left", fill="x", expand=True, ipady=10, padx=(0, 10))
+        # Username field
+        tk.Label(
+            login_frame,
+            text="USERNAME",
+            font=("Segoe UI", 9, "bold"),
+            bg=self.panel_color,
+            fg=self.muted_text
+        ).pack(anchor="w", pady=(0, 5))
+        
+        uc = tk.Frame(login_frame, bg=self.input_bg, highlightbackground=self.muted_text, highlightthickness=1)
+        uc.pack(fill="x", pady=(0, 20))
+        
+        tk.Label(
+            uc,
+            text="👤",
+            font=("Segoe UI", 18),
+            bg=self.input_bg,
+            fg=self.muted_text
+        ).pack(side="left", padx=(15, 5))
+        
+        self.username_entry = tk.Entry(
+            uc,
+            font=("Segoe UI", 12),
+            bg=self.input_bg,
+            fg=self.text_color,
+            insertbackground=self.text_color,
+            border=0,
+            relief="flat"
+        )
+        self.username_entry.pack(side="left", fill="x", expand=True, ipady=12, padx=(0, 15))
 
-        tk.Label(login_frame, text="PASSWORD", font=("Segoe UI", 9, "bold"), bg=self.panel_color, fg=self.muted_text).pack(anchor="w", pady=(0, 5))
-        pc = tk.Frame(login_frame, bg=self.input_bg)
-        pc.pack(fill="x", pady=(0, 10))
-        tk.Label(pc, text="🔒", font=("Segoe UI", 18), bg=self.input_bg, fg=self.muted_text).pack(side="left", padx=(10, 5))
-        self.password_entry = tk.Entry(pc, font=("Segoe UI", 12), bg=self.input_bg, fg=self.text_color, insertbackground=self.text_color, show="●", border=0, relief="flat")
-        self.password_entry.pack(side="left", fill="x", expand=True, ipady=10, padx=(0, 10))
+        # Password field
+        tk.Label(
+            login_frame,
+            text="PASSWORD",
+            font=("Segoe UI", 9, "bold"),
+            bg=self.panel_color,
+            fg=self.muted_text
+        ).pack(anchor="w", pady=(0, 5))
+        
+        pc = tk.Frame(login_frame, bg=self.input_bg, highlightbackground=self.muted_text, highlightthickness=1)
+        pc.pack(fill="x", pady=(0, 15))
+        
+        tk.Label(
+            pc,
+            text="🔒",
+            font=("Segoe UI", 18),
+            bg=self.input_bg,
+            fg=self.muted_text
+        ).pack(side="left", padx=(15, 5))
+        
+        self.password_entry = tk.Entry(
+            pc,
+            font=("Segoe UI", 12),
+            bg=self.input_bg,
+            fg=self.text_color,
+            insertbackground=self.text_color,
+            show="●",
+            border=0,
+            relief="flat"
+        )
+        self.password_entry.pack(side="left", fill="x", expand=True, ipady=12, padx=(0, 15))
 
+        # Options row
+        options_frame = tk.Frame(login_frame, bg=self.panel_color)
+        options_frame.pack(fill="x", pady=(0, 25))
+        
         self.show_password_var = tk.BooleanVar()
-        tk.Checkbutton(login_frame, text="Show password", variable=self.show_password_var, command=self.toggle_password, font=("Segoe UI", 9), bg=self.panel_color, fg=self.muted_text, selectcolor=self.input_bg, activebackground=self.panel_color, activeforeground=self.text_color, cursor="hand2").pack(anchor="w", pady=(0, 5))
+        tk.Checkbutton(
+            options_frame,
+            text="Show password",
+            variable=self.show_password_var,
+            command=self.toggle_password,
+            font=("Segoe UI", 9),
+            bg=self.panel_color,
+            fg=self.muted_text,
+            selectcolor=self.input_bg,
+            activebackground=self.panel_color,
+            activeforeground=self.text_color,
+            cursor="hand2"
+        ).pack(side="left")
+        
+        tk.Button(
+            options_frame,
+            text="Forgot Password?",
+            font=("Segoe UI", 9, "bold underline"),
+            bg=self.panel_color,
+            fg="#ef4444",
+            activebackground=self.panel_color,
+            activeforeground="#dc2626",
+            relief="flat",
+            cursor="hand2",
+            command=self.show_forgot_password_screen,
+            borderwidth=0
+        ).pack(side="right")
 
-        # Forgot password link
-        forgot_frame = tk.Frame(login_frame, bg=self.panel_color)
-        forgot_frame.pack(fill="x", pady=(0, 20))
-        tk.Button(forgot_frame, text="Forgot Password?", font=("Segoe UI", 9, "bold underline"), bg=self.panel_color, fg="#ef4444", activebackground=self.panel_color, activeforeground="#dc2626", relief="flat", cursor="hand2", command=self.show_forgot_password_screen, borderwidth=0).pack(anchor="e")
-
-        lb = tk.Button(login_frame, text="LOGIN", font=("Segoe UI", 12, "bold"), bg=self.accent_color, fg="white", activebackground=self.accent_hover, activeforeground="white", relief="flat", cursor="hand2", command=self.login, borderwidth=0)
-        lb.pack(fill="x", ipady=12, pady=(0, 15))
+        # Login button
+        lb = tk.Button(
+            login_frame,
+            text="LOGIN",
+            font=("Segoe UI", 13, "bold"),
+            bg=self.accent_color,
+            fg="white",
+            activebackground=self.accent_hover,
+            activeforeground="white",
+            relief="flat",
+            cursor="hand2",
+            command=self.login,
+            borderwidth=0
+        )
+        lb.pack(fill="x", ipady=15, pady=(0, 20))
         lb.bind("<Enter>", lambda e: lb.config(bg=self.accent_hover))
         lb.bind("<Leave>", lambda e: lb.config(bg=self.accent_color))
 
+        # Register link
         rf = tk.Frame(login_frame, bg=self.panel_color)
         rf.pack()
-        tk.Label(rf, text="Don't have an account? ", font=("Segoe UI", 9), bg=self.panel_color, fg=self.muted_text).pack(side="left")
-        rb = tk.Button(rf, text="Register", font=("Segoe UI", 9, "bold underline"), bg=self.panel_color, fg=self.accent_color, activebackground=self.panel_color, activeforeground=self.accent_hover, relief="flat", cursor="hand2", command=self.show_register_screen, borderwidth=0)
-        rb.pack(side="left")
+        
+        tk.Label(
+            rf,
+            text="Don't have an account? ",
+            font=("Segoe UI", 10),
+            bg=self.panel_color,
+            fg=self.muted_text
+        ).pack(side="left")
+        
+        tk.Button(
+            rf,
+            text="Register",
+            font=("Segoe UI", 10, "bold underline"),
+            bg=self.panel_color,
+            fg=self.accent_color,
+            activebackground=self.panel_color,
+            activeforeground=self.accent_hover,
+            relief="flat",
+            cursor="hand2",
+            command=self.show_register_screen,
+            borderwidth=0
+        ).pack(side="left")
 
         self.password_entry.bind("<Return>", lambda e: self.login())
 
     def show_register_screen(self):
         for widget in self.root.winfo_children():
             widget.destroy()
-        mf = tk.Frame(self.root, bg=self.bg_color)
-        mf.pack(fill="both", expand=True)
-        rf = tk.Frame(mf, bg=self.panel_color, padx=50, pady=40)
-        rf.place(relx=0.5, rely=0.5, anchor="center")
+        
+        main_frame = tk.Frame(self.root, bg=self.bg_color)
+        main_frame.pack(fill="both", expand=True)
+        
+        # Create split-screen container
+        container = tk.Frame(main_frame, bg=self.bg_color)
+        container.pack(fill="both", expand=True)
+        
+        # LEFT SIDE - Visual/Brand Section
+        left_frame = tk.Frame(container, bg=self.accent_color)
+        left_frame.pack(side="left", fill="both", expand=True)
+        
+        # Center content in left frame
+        left_content = tk.Frame(left_frame, bg=self.accent_color)
+        left_content.place(relx=0.5, rely=0.5, anchor="center")
+        
+        # Large animated brand section
+        tk.Label(
+            left_content,
+            text="❚█══█❚",
+            font=("Segoe UI", 120),
+            bg=self.accent_color,
+            fg="white"
+        ).pack(pady=(0, 20))
+        
+        tk.Label(
+            left_content,
+            text="MARKYLE",
+            font=("Segoe UI", 48, "bold"),
+            bg=self.accent_color,
+            fg="white"
+        ).pack()
+        
+        tk.Label(
+            left_content,
+            text="Fitness Tracker",
+            font=("Segoe UI", 18),
+            bg=self.accent_color,
+            fg="white"
+        ).pack(pady=(5, 30))
+        
+        tk.Label(
+            left_content,
+            text="Join thousands of users\nStart your fitness journey today\nTransform your life",
+            font=("Segoe UI", 14),
+            bg=self.accent_color,
+            fg="white",
+            justify="center"
+        ).pack()
 
-        self.create_brand_text(rf).pack(pady=(0, 30))
+        # RIGHT SIDE - Registration Form Section
+        right_frame = tk.Frame(container, bg=self.panel_color)
+        right_frame.pack(side="right", fill="both", expand=True)
+        
+        # Registration form centered in right frame
+        register_frame = tk.Frame(right_frame, bg=self.panel_color, padx=60, pady=30)
+        register_frame.place(relx=0.5, rely=0.5, anchor="center")
+        
+        # Welcome text
+        tk.Label(
+            register_frame,
+            text="Create Account",
+            font=("Segoe UI", 32, "bold"),
+            bg=self.panel_color,
+            fg=self.text_color
+        ).pack(pady=(0, 10))
+        
+        tk.Label(
+            register_frame,
+            text="Sign up to get started",
+            font=("Segoe UI", 11),
+            bg=self.panel_color,
+            fg=self.muted_text
+        ).pack(pady=(0, 30))
 
-        tk.Label(rf, text="USERNAME", font=("Segoe UI", 9, "bold"), bg=self.panel_color, fg=self.muted_text).pack(anchor="w", pady=(0, 5))
-        uc = tk.Frame(rf, bg=self.input_bg)
+        # Username field
+        tk.Label(
+            register_frame,
+            text="USERNAME",
+            font=("Segoe UI", 9, "bold"),
+            bg=self.panel_color,
+            fg=self.muted_text
+        ).pack(anchor="w", pady=(0, 5))
+        
+        uc = tk.Frame(register_frame, bg=self.input_bg, highlightbackground=self.muted_text, highlightthickness=1)
         uc.pack(fill="x", pady=(0, 15))
-        tk.Label(uc, text="👤", font=("Segoe UI", 18), bg=self.input_bg).pack(side="left", padx=(10, 5))
-        self.reg_username = tk.Entry(uc, font=("Segoe UI", 12), bg=self.input_bg, fg=self.text_color, insertbackground=self.text_color, border=0, relief="flat")
-        self.reg_username.pack(side="left", fill="x", expand=True, ipady=10, padx=(0, 10))
+        
+        tk.Label(
+            uc,
+            text="👤",
+            font=("Segoe UI", 18),
+            bg=self.input_bg,
+            fg=self.muted_text
+        ).pack(side="left", padx=(15, 5))
+        
+        self.reg_username = tk.Entry(
+            uc,
+            font=("Segoe UI", 12),
+            bg=self.input_bg,
+            fg=self.text_color,
+            insertbackground=self.text_color,
+            border=0,
+            relief="flat"
+        )
+        self.reg_username.pack(side="left", fill="x", expand=True, ipady=12, padx=(0, 15))
 
         # Email field
-        tk.Label(rf, text="EMAIL", font=("Segoe UI", 9, "bold"), bg=self.panel_color, fg=self.muted_text).pack(anchor="w", pady=(0, 5))
-        ec = tk.Frame(rf, bg=self.input_bg)
+        tk.Label(
+            register_frame,
+            text="EMAIL",
+            font=("Segoe UI", 9, "bold"),
+            bg=self.panel_color,
+            fg=self.muted_text
+        ).pack(anchor="w", pady=(0, 5))
+        
+        ec = tk.Frame(register_frame, bg=self.input_bg, highlightbackground=self.muted_text, highlightthickness=1)
         ec.pack(fill="x", pady=(0, 15))
-        tk.Label(ec, text="📧", font=("Segoe UI", 18), bg=self.input_bg).pack(side="left", padx=(10, 5))
-        self.reg_email = tk.Entry(ec, font=("Segoe UI", 12), bg=self.input_bg, fg=self.text_color, insertbackground=self.text_color, border=0, relief="flat")
-        self.reg_email.pack(side="left", fill="x", expand=True, ipady=10, padx=(0, 10))
+        
+        tk.Label(
+            ec,
+            text="📧",
+            font=("Segoe UI", 18),
+            bg=self.input_bg,
+            fg=self.muted_text
+        ).pack(side="left", padx=(15, 5))
+        
+        self.reg_email = tk.Entry(
+            ec,
+            font=("Segoe UI", 12),
+            bg=self.input_bg,
+            fg=self.text_color,
+            insertbackground=self.text_color,
+            border=0,
+            relief="flat"
+        )
+        self.reg_email.pack(side="left", fill="x", expand=True, ipady=12, padx=(0, 15))
 
         # Password validation label
-        self.password_hint = tk.Label(rf, text="Password must contain: uppercase, lowercase, number, special character (6-8 chars)", font=("Segoe UI", 8), bg=self.panel_color, fg=self.muted_text, wraplength=300)
+        self.password_hint = tk.Label(
+            register_frame,
+            text="Password must contain: uppercase, lowercase, number, special character (6-8 chars)",
+            font=("Segoe UI", 8),
+            bg=self.panel_color,
+            fg=self.muted_text,
+            wraplength=400
+        )
         self.password_hint.pack(anchor="w", pady=(0, 5))
 
-        tk.Label(rf, text="PASSWORD", font=("Segoe UI", 9, "bold"), bg=self.panel_color, fg=self.muted_text).pack(anchor="w", pady=(0, 5))
-        pc = tk.Frame(rf, bg=self.input_bg)
+        # Password field
+        tk.Label(
+            register_frame,
+            text="PASSWORD",
+            font=("Segoe UI", 9, "bold"),
+            bg=self.panel_color,
+            fg=self.muted_text
+        ).pack(anchor="w", pady=(0, 5))
+        
+        pc = tk.Frame(register_frame, bg=self.input_bg, highlightbackground=self.muted_text, highlightthickness=1)
         pc.pack(fill="x", pady=(0, 10))
-        tk.Label(pc, text="🔒", font=("Segoe UI", 18), bg=self.input_bg).pack(side="left", padx=(10, 5))
-        self.reg_password = tk.Entry(pc, font=("Segoe UI", 12), bg=self.input_bg, fg=self.text_color, insertbackground=self.text_color, show="●", border=0, relief="flat")
-        self.reg_password.pack(side="left", fill="x", expand=True, ipady=10, padx=(0, 10))
+        
+        tk.Label(
+            pc,
+            text="🔒",
+            font=("Segoe UI", 18),
+            bg=self.input_bg,
+            fg=self.muted_text
+        ).pack(side="left", padx=(15, 5))
+        
+        self.reg_password = tk.Entry(
+            pc,
+            font=("Segoe UI", 12),
+            bg=self.input_bg,
+            fg=self.text_color,
+            insertbackground=self.text_color,
+            show="●",
+            border=0,
+            relief="flat"
+        )
+        self.reg_password.pack(side="left", fill="x", expand=True, ipady=12, padx=(0, 15))
 
         # Show password checkbox for registration
         self.reg_show_password_var = tk.BooleanVar()
-        tk.Checkbutton(rf, text="Show password", variable=self.reg_show_password_var, command=self.toggle_reg_password, font=("Segoe UI", 9), bg=self.panel_color, fg=self.muted_text, selectcolor=self.input_bg, activebackground=self.panel_color, activeforeground=self.text_color, cursor="hand2").pack(anchor="w", pady=(0, 15))
+        tk.Checkbutton(
+            register_frame,
+            text="Show password",
+            variable=self.reg_show_password_var,
+            command=self.toggle_reg_password,
+            font=("Segoe UI", 9),
+            bg=self.panel_color,
+            fg=self.muted_text,
+            selectcolor=self.input_bg,
+            activebackground=self.panel_color,
+            activeforeground=self.text_color,
+            cursor="hand2"
+        ).pack(anchor="w", pady=(0, 15))
 
-        tk.Label(rf, text="CONFIRM PASSWORD", font=("Segoe UI", 9, "bold"), bg=self.panel_color, fg=self.muted_text).pack(anchor="w", pady=(0, 5))
-        p2c = tk.Frame(rf, bg=self.input_bg)
+        # Confirm Password field
+        tk.Label(
+            register_frame,
+            text="CONFIRM PASSWORD",
+            font=("Segoe UI", 9, "bold"),
+            bg=self.panel_color,
+            fg=self.muted_text
+        ).pack(anchor="w", pady=(0, 5))
+        
+        p2c = tk.Frame(register_frame, bg=self.input_bg, highlightbackground=self.muted_text, highlightthickness=1)
         p2c.pack(fill="x", pady=(0, 25))
-        tk.Label(p2c, text="🔒", font=("Segoe UI", 18), bg=self.input_bg).pack(side="left", padx=(10, 5))
-        self.reg_password2 = tk.Entry(p2c, font=("Segoe UI", 12), bg=self.input_bg, fg=self.text_color, insertbackground=self.text_color, show="●", border=0, relief="flat")
-        self.reg_password2.pack(side="left", fill="x", expand=True, ipady=10, padx=(0, 10))
+        
+        tk.Label(
+            p2c,
+            text="🔒",
+            font=("Segoe UI", 18),
+            bg=self.input_bg,
+            fg=self.muted_text
+        ).pack(side="left", padx=(15, 5))
+        
+        self.reg_password2 = tk.Entry(
+            p2c,
+            font=("Segoe UI", 12),
+            bg=self.input_bg,
+            fg=self.text_color,
+            insertbackground=self.text_color,
+            show="●",
+            border=0,
+            relief="flat"
+        )
+        self.reg_password2.pack(side="left", fill="x", expand=True, ipady=12, padx=(0, 15))
 
-        rb = tk.Button(rf, text="CREATE ACCOUNT", font=("Segoe UI", 12, "bold"), bg=self.accent_color, fg="white", activebackground=self.accent_hover, activeforeground="white", relief="flat", cursor="hand2", command=self.register, borderwidth=0)
-        rb.pack(fill="x", ipady=12, pady=(0, 15))
+        # Create Account button
+        rb = tk.Button(
+            register_frame,
+            text="CREATE ACCOUNT",
+            font=("Segoe UI", 13, "bold"),
+            bg=self.accent_color,
+            fg="white",
+            activebackground=self.accent_hover,
+            activeforeground="white",
+            relief="flat",
+            cursor="hand2",
+            command=self.register,
+            borderwidth=0
+        )
+        rb.pack(fill="x", ipady=15, pady=(0, 20))
         rb.bind("<Enter>", lambda e: rb.config(bg=self.accent_hover))
         rb.bind("<Leave>", lambda e: rb.config(bg=self.accent_color))
 
-        tk.Button(rf, text="← Back to Login", font=("Segoe UI", 9, "bold"), bg=self.panel_color, fg=self.accent_color, activebackground=self.panel_color, activeforeground=self.accent_hover, relief="flat", cursor="hand2", command=self.show_login_screen, borderwidth=0).pack()
+        # Back to Login button
+        tk.Button(
+            register_frame,
+            text="← Back to Login",
+            font=("Segoe UI", 10, "bold"),
+            bg=self.panel_color,
+            fg=self.accent_color,
+            activebackground=self.panel_color,
+            activeforeground=self.accent_hover,
+            relief="flat",
+            cursor="hand2",
+            command=self.show_login_screen,
+            borderwidth=0
+        ).pack()
 
     def show_forgot_password_screen(self):
         for widget in self.root.winfo_children():
             widget.destroy()
         
-        mf = tk.Frame(self.root, bg=self.bg_color)
-        mf.pack(fill="both", expand=True)
+        main_frame = tk.Frame(self.root, bg=self.bg_color)
+        main_frame.pack(fill="both", expand=True)
         
-        fp_frame = tk.Frame(mf, bg=self.panel_color, padx=50, pady=40)
+        # Create split-screen container
+        container = tk.Frame(main_frame, bg=self.bg_color)
+        container.pack(fill="both", expand=True)
+        
+        # LEFT SIDE - Visual/Brand Section
+        left_frame = tk.Frame(container, bg="#ef4444")
+        left_frame.pack(side="left", fill="both", expand=True)
+        
+        # Center content in left frame
+        left_content = tk.Frame(left_frame, bg="#ef4444")
+        left_content.place(relx=0.5, rely=0.5, anchor="center")
+        
+        # Large animated brand section
+        tk.Label(
+            left_content,
+            text="🔐",
+            font=("Segoe UI", 120),
+            bg="#ef4444",
+            fg="white"
+        ).pack(pady=(0, 20))
+        
+        tk.Label(
+            left_content,
+            text="MARKYLE",
+            font=("Segoe UI", 48, "bold"),
+            bg="#ef4444",
+            fg="white"
+        ).pack()
+        
+        tk.Label(
+            left_content,
+            text="Fitness Tracker",
+            font=("Segoe UI", 18),
+            bg="#ef4444",
+            fg="white"
+        ).pack(pady=(5, 30))
+        
+        tk.Label(
+            left_content,
+            text="Don't worry!\nWe'll help you recover your account\nGet back on track",
+            font=("Segoe UI", 14),
+            bg="#ef4444",
+            fg="white",
+            justify="center"
+        ).pack()
+
+        # RIGHT SIDE - Forgot Password Form Section
+        right_frame = tk.Frame(container, bg=self.panel_color)
+        right_frame.pack(side="right", fill="both", expand=True)
+        
+        # Forgot password form centered in right frame
+        fp_frame = tk.Frame(right_frame, bg=self.panel_color, padx=60, pady=40)
         fp_frame.place(relx=0.5, rely=0.5, anchor="center")
         
-        self.create_brand_text(fp_frame).pack(pady=(0, 20))
+        # Header text
+        tk.Label(
+            fp_frame,
+            text="Forgot Password?",
+            font=("Segoe UI", 32, "bold"),
+            bg=self.panel_color,
+            fg=self.text_color
+        ).pack(pady=(0, 10))
         
-        tk.Label(fp_frame, text="FORGOT PASSWORD", font=("Segoe UI", 16, "bold"), bg=self.panel_color, fg=self.text_color).pack(pady=(0, 30))
+        tk.Label(
+            fp_frame,
+            text="Enter your username to recover your password",
+            font=("Segoe UI", 11),
+            bg=self.panel_color,
+            fg=self.muted_text,
+            wraplength=400
+        ).pack(pady=(0, 40))
+
+        # Username field
+        tk.Label(
+            fp_frame,
+            text="USERNAME",
+            font=("Segoe UI", 9, "bold"),
+            bg=self.panel_color,
+            fg=self.muted_text
+        ).pack(anchor="w", pady=(0, 5))
         
-        tk.Label(fp_frame, text="Enter your username to recover password", font=("Segoe UI", 10), bg=self.panel_color, fg=self.muted_text, wraplength=300).pack(pady=(0, 20))
+        uc = tk.Frame(fp_frame, bg=self.input_bg, highlightbackground=self.muted_text, highlightthickness=1)
+        uc.pack(fill="x", pady=(0, 30))
         
-        # Username only
-        tk.Label(fp_frame, text="USERNAME", font=("Segoe UI", 9, "bold"), bg=self.panel_color, fg=self.muted_text).pack(anchor="w", pady=(0, 5))
-        uc = tk.Frame(fp_frame, bg=self.input_bg)
-        uc.pack(fill="x", pady=(0, 25))
-        tk.Label(uc, text="👤", font=("Segoe UI", 18), bg=self.input_bg).pack(side="left", padx=(10, 5))
-        self.fp_username = tk.Entry(uc, font=("Segoe UI", 12), bg=self.input_bg, fg=self.text_color, insertbackground=self.text_color, border=0, relief="flat")
-        self.fp_username.pack(side="left", fill="x", expand=True, ipady=10, padx=(0, 10))
+        tk.Label(
+            uc,
+            text="👤",
+            font=("Segoe UI", 18),
+            bg=self.input_bg,
+            fg=self.muted_text
+        ).pack(side="left", padx=(15, 5))
         
-        # Reset button
-        reset_btn = tk.Button(fp_frame, text="SHOW PASSWORD", font=("Segoe UI", 12, "bold"), bg="#ef4444", fg="white", activebackground="#dc2626", activeforeground="white", relief="flat", cursor="hand2", command=self.show_user_password, borderwidth=0)
-        reset_btn.pack(fill="x", ipady=12, pady=(0, 15))
+        self.fp_username = tk.Entry(
+            uc,
+            font=("Segoe UI", 12),
+            bg=self.input_bg,
+            fg=self.text_color,
+            insertbackground=self.text_color,
+            border=0,
+            relief="flat"
+        )
+        self.fp_username.pack(side="left", fill="x", expand=True, ipady=12, padx=(0, 15))
+
+        # Show Password button
+        reset_btn = tk.Button(
+            fp_frame,
+            text="SHOW PASSWORD",
+            font=("Segoe UI", 13, "bold"),
+            bg="#ef4444",
+            fg="white",
+            activebackground="#dc2626",
+            activeforeground="white",
+            relief="flat",
+            cursor="hand2",
+            command=self.show_user_password,
+            borderwidth=0
+        )
+        reset_btn.pack(fill="x", ipady=15, pady=(0, 20))
         reset_btn.bind("<Enter>", lambda e: reset_btn.config(bg="#dc2626"))
         reset_btn.bind("<Leave>", lambda e: reset_btn.config(bg="#ef4444"))
         
-        # Back to login
-        tk.Button(fp_frame, text="← Back to Login", font=("Segoe UI", 9, "bold"), bg=self.panel_color, fg=self.accent_color, activebackground=self.panel_color, activeforeground=self.accent_hover, relief="flat", cursor="hand2", command=self.show_login_screen, borderwidth=0).pack()
+        # Back to login button
+        tk.Button(
+            fp_frame,
+            text="← Back to Login",
+            font=("Segoe UI", 10, "bold"),
+            bg=self.panel_color,
+            fg=self.accent_color,
+            activebackground=self.panel_color,
+            activeforeground=self.accent_hover,
+            relief="flat",
+            cursor="hand2",
+            command=self.show_login_screen,
+            borderwidth=0
+        ).pack()
 
     def show_user_password(self):
         """Show user's password when they enter username"""
@@ -334,6 +819,7 @@ class FitnessTrackerApp:
         self.root.clipboard_clear()
         self.root.clipboard_append(text)
         messagebox.showinfo("Copied", "Password copied to clipboard!")
+    
     def toggle_password(self):
         if self.show_password_var.get():
             self.password_entry.config(show="")
@@ -539,7 +1025,7 @@ class FitnessTrackerApp:
         # Icon
         tk.Label(
             logo_frame,
-            text="💪",
+            text="❚█══█❚",
             font=("Segoe UI", 48),
             bg=self.sidebar_bg,
             fg="#FFD700"
@@ -2541,165 +3027,189 @@ class FitnessTrackerApp:
         self.highlight_nav_button(3)
         self.clear_content()
 
-        # Create main container
-        main_container = tk.Frame(self.content_frame, bg=self.bg_color)
-        main_container.pack(fill="both", expand=True, padx=20, pady=20)
+        # Create canvas and scrollbars
+        canvas = tk.Canvas(self.content_frame, bg=self.bg_color, highlightthickness=0)
+        v_scrollbar = tk.Scrollbar(self.content_frame, orient="vertical", command=canvas.yview)
+        h_scrollbar = tk.Scrollbar(self.content_frame, orient="horizontal", command=canvas.xview)
+        scrollable_frame = tk.Frame(canvas, bg=self.bg_color)
 
-        # Title
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set)
+
+        # Pack scrollbars and canvas
+        v_scrollbar.pack(side="right", fill="y")
+        h_scrollbar.pack(side="bottom", fill="x")
+        canvas.pack(side="left", fill="both", expand=True)
+
+        # Enable mousewheel scrolling
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        canvas.bind_all("<MouseWheel>", _on_mousewheel)
+
+        # Create main container (now inside scrollable_frame) - reduced padding
+        main_container = tk.Frame(scrollable_frame, bg=self.bg_color)
+        main_container.pack(fill="both", expand=True, padx=15, pady=15)
+
+        # Title - smaller font
         tk.Label(
             main_container,
             text="⚙️ SETTINGS",
-            font=("Segoe UI", 32, "bold"),
+            font=("Segoe UI", 24, "bold"),
             bg=self.bg_color,
             fg=self.text_color
-        ).pack(anchor="center", pady=(0, 30))
+        ).pack(anchor="center", pady=(0, 20))
 
         # Simple grid layout - 1 row, 3 columns
         grid_frame = tk.Frame(main_container, bg=self.bg_color)
         grid_frame.pack(fill="both", expand=True)
 
-        # Configure equal columns
-        grid_frame.grid_columnconfigure(0, weight=1, uniform="settings_col")
-        grid_frame.grid_columnconfigure(1, weight=1, uniform="settings_col")
-        grid_frame.grid_columnconfigure(2, weight=2, uniform="settings_col")  # Analytics column wider
+        # Configure columns - appearance small, data and analytics fill
+        grid_frame.grid_columnconfigure(0, weight=0, minsize=200)  # Appearance fixed small
+        grid_frame.grid_columnconfigure(1, weight=1)  # Data Management fills
+        grid_frame.grid_columnconfigure(2, weight=2)  # Analytics fills wider
 
         # ==================== COLUMN 0 - APPEARANCE ====================
         appearance_frame = tk.Frame(grid_frame, bg=self.bg_color)
-        appearance_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
+        appearance_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
         
         appearance_card = tk.Frame(appearance_frame, bg=self.panel_color, relief="solid", bd=1)
         appearance_card.pack(fill="both", expand=True)
 
         appearance_content = tk.Frame(appearance_card, bg=self.panel_color)
-        appearance_content.pack(fill="both", expand=True, padx=25, pady=25)
+        appearance_content.pack(fill="both", expand=True, padx=18, pady=18)
 
-        # Title
+        # Title - smaller font
         tk.Label(
             appearance_content,
             text="🎨 Appearance",
-            font=("Segoe UI", 20, "bold"),
+            font=("Segoe UI", 16, "bold"),
             bg=self.panel_color,
             fg=self.text_color
-        ).pack(anchor="w", pady=(0, 20))
+        ).pack(anchor="w", pady=(0, 15))
 
-        # Dark mode toggle
+        # Dark mode toggle - smaller font and padding
         dark_mode_var = tk.BooleanVar(value=self.dark_mode)
         dark_mode_check = tk.Checkbutton(
             appearance_content,
             text="Dark Mode",
             variable=dark_mode_var,
             command=lambda: self.toggle_dark_mode(dark_mode_var.get()),
-            font=("Segoe UI", 14),
+            font=("Segoe UI", 12),
             bg=self.panel_color,
             fg=self.text_color,
             selectcolor=self.input_bg,
-            padx=10,
-            pady=10
+            padx=8,
+            pady=8
         )
         dark_mode_check.pack(anchor="w")
 
         # ==================== COLUMN 1 - DATA MANAGEMENT ====================
         data_frame = tk.Frame(grid_frame, bg=self.bg_color)
-        data_frame.grid(row=0, column=1, sticky="nsew", padx=10)
+        data_frame.grid(row=0, column=1, sticky="nsew", padx=8)
         
         data_card = tk.Frame(data_frame, bg=self.panel_color, relief="solid", bd=1)
         data_card.pack(fill="both", expand=True)
 
         data_content = tk.Frame(data_card, bg=self.panel_color)
-        data_content.pack(fill="both", expand=True, padx=25, pady=25)
+        data_content.pack(fill="both", expand=True, padx=18, pady=18)
 
-        # Title
+        # Title - smaller font
         tk.Label(
             data_content,
             text="📊 Data Management",
-            font=("Segoe UI", 20, "bold"),
+            font=("Segoe UI", 16, "bold"),
             bg=self.panel_color,
             fg=self.text_color
-        ).pack(anchor="w", pady=(0, 20))
+        ).pack(anchor="w", pady=(0, 15))
 
-        # Export button
+        # Export button - smaller
         export_btn = tk.Button(
             data_content,
             text="📤 EXPORT CSV",
-            font=("Segoe UI", 14, "bold"),
+            font=("Segoe UI", 11, "bold"),
             bg=self.accent_color,
             fg="white",
             command=self.export_csv,
-            padx=20,
-            pady=12
+            padx=15,
+            pady=8
         )
-        export_btn.pack(fill="x", pady=(0, 15))
+        export_btn.pack(fill="x", pady=(0, 10))
 
-        # Import button
+        # Import button - smaller
         import_btn = tk.Button(
             data_content,
             text="📥 IMPORT CSV",
-            font=("Segoe UI", 14, "bold"),
+            font=("Segoe UI", 11, "bold"),
             bg=self.input_bg,
             fg=self.text_color,
             command=self.import_csv,
-            padx=20,
-            pady=12
+            padx=15,
+            pady=8
         )
-        import_btn.pack(fill="x", pady=(0, 30))
+        import_btn.pack(fill="x", pady=(0, 20))
 
-        # History button
+        # History button - smaller
         history_btn = tk.Button(
             data_content,
             text="📋 VIEW HISTORY",
-            font=("Segoe UI", 14, "bold"),
+            font=("Segoe UI", 11, "bold"),
             bg=self.accent_color,
             fg="white",
             command=self.show_history_single_window,
-            padx=20,
-            pady=12
+            padx=15,
+            pady=8
         )
         history_btn.pack(fill="x")
 
         # ==================== COLUMN 2 - ANALYTICS ====================
         analytics_frame = tk.Frame(grid_frame, bg=self.bg_color)
-        analytics_frame.grid(row=0, column=2, sticky="nsew", padx=(10, 0))
+        analytics_frame.grid(row=0, column=2, sticky="nsew", padx=(8, 0))
         
         analytics_card = tk.Frame(analytics_frame, bg=self.panel_color, relief="solid", bd=1)
         analytics_card.pack(fill="both", expand=True)
 
         analytics_content = tk.Frame(analytics_card, bg=self.panel_color)
-        analytics_content.pack(fill="both", expand=True, padx=25, pady=25)
+        analytics_content.pack(fill="both", expand=True, padx=18, pady=18)
 
-        # Title
+        # Title - smaller font
         tk.Label(
             analytics_content,
             text="📈 Analytics",
-            font=("Segoe UI", 20, "bold"),
+            font=("Segoe UI", 16, "bold"),
             bg=self.panel_color,
             fg=self.text_color
-        ).pack(anchor="w", pady=(0, 20))
+        ).pack(anchor="w", pady=(0, 15))
 
-        # Chart controls
+        # Chart controls - smaller
         controls_frame = tk.Frame(analytics_content, bg=self.panel_color)
-        controls_frame.pack(fill="x", pady=(0, 20))
+        controls_frame.pack(fill="x", pady=(0, 15))
 
         weekly_btn = tk.Button(
             controls_frame,
             text="🔥 WEEKLY CALORIES",
-            font=("Segoe UI", 12, "bold"),
+            font=("Segoe UI", 10, "bold"),
             bg=self.accent_color,
             fg="white",
             command=lambda: self.plot_weekly_calories_in_settings(chart_frame),
-            padx=20,
-            pady=8
+            padx=15,
+            pady=6
         )
-        weekly_btn.pack(side="left", padx=(0, 10))
+        weekly_btn.pack(side="left", padx=(0, 8))
 
         duration_btn = tk.Button(
             controls_frame,
             text="⏱️ DURATION OVER TIME",
-            font=("Segoe UI", 12, "bold"),
+            font=("Segoe UI", 10, "bold"),
             bg=self.accent_color,
             fg="white",
             command=lambda: self.plot_duration_in_settings(chart_frame),
-            padx=20,
-            pady=8
+            padx=15,
+            pady=6
         )
         duration_btn.pack(side="left")
 
@@ -3069,9 +3579,16 @@ class FitnessTrackerApp:
         canvas.get_tk_widget().pack(fill="both", expand=True)
 
     def logout(self):
-        self.current_user = None
-        self.is_logged_in = False
-        self.show_login_screen()
+    # Create a confirmation dialog
+        reply = messagebox.askyesno(
+        'Confirm Logout', 
+        'Are you sure you want to logout?'
+    )
+    
+        if reply:  # If user clicked Yes
+            self.current_user = None
+            self.is_logged_in = False
+            self.show_login_screen()
 
     def open_calendar(self, entry_widget):
         # Check if calendar window already exists
